@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <meta content="text/html; charset="UTF-8" http-equiv="content-type">
+  <title>SMIL</title>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<p align="center"><font size="+5">SMILemu</font></p>
+
+<p align="center"><font size="+3">A Quick Start Guide</font></p>
+
+<h2>Getting SMILemu</h2>
+
+<p>
+The emulator is made available in three forms:
+</p>
+
+<ul>
+  <li>as a generic Java archive (<tt><a href="http://www.smilemu.org/SMILemu-1.2.jar">SMILemu-1.2.jar</a></tt>)</li>
+  <li>as a Mac OS X Application Bundle (<font face="sans-serif">SMILemu.app</font>)
+on a Mac OS X Disk Image (<font face="sans-serif"><a href="http://www.smilemu.org/SMILemu-1.2.dmg">SMILemu-1.2.dmg</a></font>)</li>
+  <li>as a Java Applet, at <tt><a href="http://www.smilemu.org/applet.html">http://www.smilemu.org/applet.html</a></tt></li>
+</ul>
+
+<h2>Starting SMILemu</h2>
+
+<p>To run SMILemu.app under Mac OS X, you only need to double-click
+it, which
+will locate the appropriate Java 5 runtime and launch the emulator. On
+other platforms such as Microsoft Windows XP, you may be able to
+double-click&nbsp;SMILemu-1.2.jar, which in turn launches the Java Runtime
+and the emulator. Otherwise, you may have to manually launch the
+emulator from a commend-line terminal, usually with the command</p>
+
+<pre> java -jar SMILemu-1.2.jar<br></pre>
+
+<p>Once SMILemu has started, you will be presented with its three
+default windows.</p>
+
+<h3>Control Panel</h3>
+<img alt="Control Panel" src="images/ControlPanel.png" border="0">
+
+<h3>Tape Reader</h3>
+<img alt="Tape Reader" src="images/TapeReader.png" border="0">
+
+<h3>Typewriter</h3>
+<img alt="Typewriter" src="images/Typewriter.png" border="0">
+
+<p>To give you a quick flavor of operating SMIL, we shall load and run one of the programs included with the emulator:
+<ol>
+<li>Press the rightmost toggle switch (at the bottom right of the control panel)
+to its upper position, labeled '<tt>Remsstart</tt>' (by clicking with the mouse just underneath where <tt>Remsstart</tt>
+is printed on the panel).
+You should see several lights on the panel light up in the center of the bottom row of lights-and-buttons. Those lights show the contents 
+of to KR register, the program counter.
+</li>
+<li>Press the same rightmost
+toggle switch to the '<tt>Start</tt>' (lower) position. The Control Panel should briefly (for about 2 seconds) show a flurry of activity, 
+leaving some more lights lit than before, and the Tape Reader should now show the trailing end of the tape.
+</li>
+<li>
+From the 'Tape' menu at the top of the Control Panel (or on Mac OS X, on the Menu Bar), select 'Load Standard Tape' > 'Sine Wave'. This 
+loads a different tape into the Tape Reader and positions the reader at the beginning of the tape.
+</li>
+<li>
+Now press the right toggle switch to '<tt>Start</tt>' again (<em>not</em> '<tt>Remsstart</tt>'). This will once more cause a flurry
+of activity, reading the tape into the emulator and leaving the Tape Reader at the end of the tape. 
+</li>
+<li>Click on the button just above the label '<tt>IR Noll</tt>' at the left, just below half height of the Control Panel. This clears the 
+left half of that line of lights. Now, using the buttons underneath the individual lights, set the value of those 20 bits to 
+<tt>0100&nbsp;0000&nbsp;0101&nbsp;1001&nbsp;0000</tt> (where <tt>1</tt>s indicate the  the light should be lit, i.e., 
+you need to press the button underneath the light), which is <tt>40590</tt> in base 16 (aka 'hexadecimal' or 'hex'). (If you make a mistake, just
+click the 'IR Noll' button again, and start over.) This places the 
+instruction 'Jump to address 405 left' into the left half of the instruction register.
+</li>
+<li>Click on the button labeled '<tt>KR Noll</tt>' just left of center on the bottom row of lights-and-buttons, which is straight below the 
+last bit you should have turned on on the IR register. This clears the program
+counter, on the process instructing it to next execute the instruction in the left half of the instruction register.</li>
+<li>Finally, press the right toggle switch to 'Start' again. This will execute the jump instruction in the left half of IR, which 
+jumps to the beginning of the Sine Wave program we loaded earlier - and begins to print a sine wave on the Typewriter, using spaces 
+and <tt>+</tt> characters, all while the control panel should show lots of activity.</li>
+</ol>
+To stop the program, press the <em>left</em> toggle switch to its upper '<tt>Stegvis</tt>' position. This sets SMIL to run in 
+single-step mode. Unlike the right toggle switch, 
+the left one does not automatically return to its center position when you release the mouse; in order to return it to its center,
+and thus return SMIL to its normal running mode, you need to click in the center position for the toggle switch.
+</p>
+<p>
+Congratulations - you have just run your first program on the emulated SMIL, and possibly had your first experience of what computing
+was like in 1956! To learn more about both SMIL the computer and SMILemu the emulator please read the <a href="Manual.html">SMIL Emulator Manual</a>.
+</p>
+
+<p align="center"><font size="-1">Copyright &copy; 2006 <a href="mailto:smilemu@smilemu.org">Christian Brunschen</a></font></p>
+
+</body></html>

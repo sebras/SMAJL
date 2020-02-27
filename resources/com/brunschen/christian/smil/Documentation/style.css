@@ -1,0 +1,70 @@
+@media screen {
+a:link {
+	color: #000000; 
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+}
+
+a:visited {
+	color: #000000;
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+}
+a:hover {
+	color: #f04040; 
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+} 
+a:active {
+	color: #60f060;
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+}
+}
+
+@media print {
+a:link {
+	color: #000000; 
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+}
+
+a:visited {
+	color: #000000; 
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+}
+a:hover {
+	color: #000000; 
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+} 
+a:active {
+	color: #000000; 
+	text-decoration: none; 
+	border-style: dashed; 
+	border-width: thin;
+	border-color: #a0a0a0
+}
+}
+
+tbody { page-break-inside: avoid; }
+p { page-break-inside: avoid; }
+h1 { page-break-after: avoid; }
+h2 { page-break-after: avoid; }
+h3 { page-break-after: avoid; }
+h4 { page-break-after: avoid; }

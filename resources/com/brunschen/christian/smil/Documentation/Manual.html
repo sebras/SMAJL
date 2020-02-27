@@ -1,0 +1,2020 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset="UTF-8" http-equiv="content-type">
+  <title>The SMILemu Manual</title>
+  <style type="text/css">
+td.pad { width:15; }
+td.padded { padding-right: 2em; }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<!-- #Introduction# -->
+<p align="center"><font size="+5">SMILemu</font></p>
+
+<p align="center"><font size="+3">An Emulator for <em>Siffermaskinen i
+Lund</em></font><br><font size="+1">Version 1.2</font></p>
+
+<p align="center"><font size="-1">Copyright &copy; 2005&ndash;2007 <a href="mailto:smilemu@smilemu.org">Christian Brunschen</a></font></p>
+
+<h1>Introduction</h1>
+
+<p>If you wish to quickly delve into the SMIL emulator, please see the <a
+href="QuickStart.html">Quick Start</a> document.</p>
+
+<p>This manual accompanies <em>SMILemu</em>, an emulator for the SMIL computer, which was built
+in Sweden in 1956. SMIL was one of several computers around the world based
+on the <em>IAS Machine</em> architecture. SMILemu is intended to
+emulate the experience of using SMIL as faithfully as possible, and should
+serve as a general example of the experience of using a computer 5 decades
+ago (as of the writing of this manual, in December 2005).</p>
+
+<p>I will describe the SMIL computer itself, with some information about its
+background and its architecture, at least to give a sufficient understanding
+for the purpose of using the emulator and using and perchance even writing
+programs for SMIL.</p>
+
+<p>This is not the first emulator for SMIL. In 1991, Lars Gisl&eacute;n at the
+Department of Theoretical Physics at Lund University wrote an emulator for
+the Macintosh. He has been most kind to allow me access to his source code as
+well as to copies of his own research material into SMIL, for the development
+of SMILemu. All of the sample SMIL programs included with this emulator
+were originally written for and included with Lars Gisl&eacute;n's emulator, and my
+emulator retains file format compatibility with its tape files. That said, in
+the 14 years that have passed between the two emulators' implementations,
+computers have gotten faster, received more memory and better graphics. Due
+to all of these advancements, the current emulator can offer a more
+supportive user environment, and indeed offer better performance in spite of
+being written in Java; and by being written in Java it is also portable, even
+in binary form, to many different platforms. </p>
+
+<!-- #The SMIL Computer# -->
+<h1>The SMIL Computer</h1>
+
+<p>
+The <em>SMIL</em> computer is an example of an early computer, one of what is 
+today commonly referred to as the 'first generation' of computers. Since then,
+many things have happened, and our understanding of what computers need to do
+has grown, and these lessons learned have of course been incorporated into
+the computers that are in general use today. For this reason, SMIL's architecture, design, 
+instruction set and so on all show both similarities with and differences from
+those one would find in modern-day (early 21<sup>st</sup> century) computers.
+Let's take a look at SMIL, both from a historical and from a more technical 
+point of view.
+</p>
+
+<!-- #The SMIL Computer!Overview# -->
+<h2>Overview and Background</h2>
+
+<p><em>SMIL</em> is the short form name of an early (1956) Swedish computer,
+and is the acronym of the computer's full name, <em>Siffermaskinen i
+Lund</em>, 'the Lund Digital Machine'. SMIL was built at the university of
+Lund in southern Sweden, as a copy of the even earlier (1953) Swedish
+computer <em><a
+href="http://www.algonet.se/~rittsel/dator/besk1.htm">BESK</a></em>,
+<em>Bin&auml;r Elektronisk Sekvens-Kalkylator</em>, 'binary electronic sequence
+calculator'. BESK's, and thus SMIL's, design were based on the <em>IAS
+Machine</em> design, as described in the 1954 <a
+href="http://bitsavers.trailing-edge.com/pdf/ias/IAS_Final_Report_Jan54.pdf"><em>Final
+Progress Report on the Physical Realization of an Electronic Computing
+Instrument</em></a> by Herman H. Goldstine, James H. Pomerene and Charles V.
+L. Smith, of the <em>Institute for Advanced Study Electronic Computer
+Project</em>, or more specifically, on  earlier drafts of that document. 
+These early drafts of this report were widely circulated in circles interested in
+computers, and was used as the basis for a number of different computers
+throughout the world, including the USA, the UK, the Soviet Union, and in the
+shape of BESK and its successors, in Sweden. As the <em>Final Progress
+Report</em> only outlines the general architecture of a computer but does not
+go into certain more low-level issues of implementation, such as the precise
+mapping of instruction codes to instructions, most IAS machines are
+incompatible with one another. While SMIL and other BESK derivatives (such as
+the Danish computer <em>DASK</em>, and <a
+href="http://www.datasaab.se/">Datasaab</a>'s <em>SARA</em>) were based not
+only on the architecture but also on the implementation of BESK, there were
+marked similarities between them, moreso than between most IAS machines - though
+in each case, lessons learned in the construction of its predecessors would 
+influence both the design and the implementation of the new machine.
+SMIL initially had a tape reader as its sole
+input device, a typewriter as its sole output device, and a drum containing
+2048 words of memory, which is only half of SMIL's 12-bit address space. SMIL
+was later upgraded with the full 4096 words of core rather than drum memory,
+an external memory, external magnetic tape storage, a punched card reader and
+an improved printer.</p>
+
+<!-- #The SMIL Computer!Architecture# -->
+<h2>Architecture</h2>
+
+<p>SMIL, like IAS machines in general, has a word size of 40 bits. This means
+that each individually addressable memory unit is 40 bits in size. The
+register size is also 40 bits. SMIL uses a von Neumann architecture, where
+instructions and data are stored together in the same memory. The bits within
+a word are numbered from 0 for the <em>most</em> significant bit to 39 for
+the <em>least</em> significant bit.</p>
+
+<p>Instructions, however, are only 20 bits wide. Thus, two instructions are
+stored in each word in memory &mdash; one 'left' instruction, in bits 0 to 19, and
+one 'right' instruction in words 20 to 39. The format of each instruction may
+appear somewhat unusual when viewed with modern eyes: 12 bits for the memory
+address that the instruction refers to (if applicable), followed by 4 bits
+that choose the instruction to execute, and a further 4 'extra' bits which
+specify options within the selected instruction.</p>
+
+<p>As each instruction must be able to address the entire memory, SMIL's
+address space is 12 bits wide, for a total of 4096 different addresses.
+However, with two words per instruction, SMIL must keep track of which half
+of the word to actually execute. The instruction counter thus contains
+<em>13</em> bits &mdash; 12 for the actual address, and one extra to indicate
+whether to execute the left or right instruction within the word.</p>
+
+<h3>Number Format</h3>
+
+<p>SMIL uses a fixed-point representation of real numbers for its arithmetic
+unit. Each 40-bit word is used to represent a number in the range [&minus;1.0 ...
+1.0), i.e, from &minus;1.0 inclusive to 1.0 exclusive. How are these numbers
+represented in SMIL's 40-bit binary words?</p>
+
+<p>To represent a fractional number in binary, SMIL uses the same method as
+generally in use with the decimal system: a 'binary point' is defined
+(analogously to the 'decimal point'. Digits to the <em>left</em> of the binary
+point contribute whole values to the number; digits to the <em>right</em>
+contribute fractional values. Just as the decimal fraction '405.39' can be
+written as (4&times;10<sup>2</sup> + 0&times;10<sup>1</sup> + 5&times;10 <sup>0</sup>+ 3&times;
+10 <sup>&minus;1</sup> + 9&times;10<sup>&minus;2</sup>), the binary fraction '101.01' can be
+written as (1&times;2<sup>2</sup> + 0&times;2<sup>1</sup> + 1&times;2<sup>0</sup> +
+0&times;2<sup>&minus;1</sup> + 1&times;2<sup>&minus;2</sup>) which comes together as five and one
+quarter (or '5.25' as a decimal fraction). The designers of SMIL followed the
+design of the IAS machine in choosing to place the 'binary point' between
+bits 0 and 1 of SMIL's word.</p>
+
+<p>As described above, SMIL would have a range of numbers from binary
+0.00000... to 1.11111..., which would be in decimal, from 0.0 to 1.9999...
+(or more exactly, 2&nbsp;&minus;&nbsp;2<sup>&minus;39</sup>). However, there is also a need to
+represent negative number, as they are very common in scientific
+calculations. To represent negative numbers, SMIL uses what is known as
+'two's complement notation'. Simply put, two's complement offers a way to
+represent negative numbers uniquely by inverting every bit in the word (which
+gives the 'ones complement') and adding one. For instance, if we wish to
+represent &minus;5 in a four-bit word, we would start with a word containing 5
+(<tt>0101</tt>), invert every bit (giving '<tt>1010</tt>') and add one,
+giving '<tt>1011</tt>'. Two's complement has the very desirable and useful
+property that each number is only represented exactly once, so each number is
+unique (whereas choosing one's complement would have meant that there would
+be two different 'zero' values, represented by 'all zeroes' and 'all ones').
+It also turns out that the most significant bit in every positive number is
+zero, and the most significant bit of every negative number is one &mdash; in
+effect, the most significant bit (bit 0 on SMIL) can be used as a 'sign bit'
+which indicates at a glance whether any given number is positive or negative.
+And finally, using two's complement a subtraction, a &minus; b, can be performed by
+<em>adding</em> a and the two's complement of b. This significantly
+simplifies the implementation of the arithmetic unit, which makes the
+computer simpler and less expensive.</p>
+
+<p>Using two's complement, but keeping the binary point in the same place,
+SMIL's numeric range now becomes [&minus;1.0 ... 1.0): &minus;1.0 can be exactly
+represented as the 40-bit value
+'<tt>1000&nbsp;0000&nbsp;0000&nbsp;0000&nbsp;0000&nbsp;0000&nbsp;0000&nbsp;0000&nbsp;0000&nbsp;0000</tt>',
+whereas the largest positive value is
+'<tt>0111&nbsp;1111&nbsp;1111&nbsp;1111&nbsp;1111&nbsp;1111&nbsp;1111&nbsp;1111&nbsp;1111&nbsp;1111</tt>', which
+is equal to 1&nbsp;&minus;&nbsp;2<sup>&minus;39</sup> &mdash; and that is as close as SMIL gets to
+1.0.</p>
+<p>
+With two's complement notation as used in SMIL, there are two special cases, 
+which behave: 0.0 slightly different than the rest: and &minus;1.0. To see why 
+and how they are special, we look at each case on turn, using a four-bit word 
+size in any examples:
+<dl>
+<dt>0.0</dt>
+<dd>
+0.0 is represented as <tt>0000</tt>. The two's complement of <tt>0000</tt> is
+<tt>1111</tt>+<tt>1</tt> = <tt>0000</tt> = 0.0 . This isn't really strange
+per se &mdash; one would expect &minus;0 to equals 0 &mdash; but it means that
+0.0 is the only non-negative number, the only number whose sign bit is
+<tt>0</tt>, whose two's complement is <em>also</em> non-negative &mdash;
+whose sign bit <em>remains</em> <tt>0</tt> after two-complementation. 
+</dd>
+<dt>&minus;1.0</dt>
+<dd>
+&minus;1.0 is represented as <tt>1000</tt>. The two's complement of <tt>1000</tt> is
+<tt>0111</tt>+<tt>1</tt> = <tt>1000</tt> = &minus;1.0 . This is clearly strange
+&mdash; one would expect &minus;(&minus;1.0) to equals 1.0 &mdash; but it is
+a consequence of the limited number range; remember, 1.0 can not actually be
+represented in SMIL's number range! The effective result, however, is that
+&minus;1.0 is the only negative number, the only number whose sign bit is
+<tt>1</tt>, whose two's complement is <em>also</em> negative &mdash;
+whose sign bit <em>remains</em> <tt>1</tt> after two-complementation. 
+</dd>
+</dl>
+These special cases come in handy on occasion. For instance, while SMIL does not
+have an explicit instruction for comparison to zero, we can use the 0.0 special
+case and test whether &minus;|AR| &ge; 0: For any number other than 0.0, taking 
+its absolute value and negating it will result in a negative number; however 
+for 0.0 and for 0.0 only, he result will be positive. Similarly, we can check
+whether AR contains &minus;1.0 by testing whether |AR| &lt; 0; for any number
+other than &minus;1.0, the absolute value will be positive, but for &minus;1.0 
+and only for &minus;1.0, the absolute value will be negative. These two 
+shortcuts can be quite useful.
+</p>
+
+<h3>Registers</h3>
+
+<p>SMIL has 5 registers that the user will generally interact with:</p>
+
+<table border="0">
+  <tbody>
+    <tr>
+      <th colspan="2">Register</th>
+      <td class="pad" rowspan="6"></td>
+      <th>Description</th>
+      <td class="pad" rowspan="6"></td>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td valign="baseline">MD</td>
+      <td valign="baseline"><b>M</b>ultiplikan<b>d</b></td>
+      <td valign="baseline">Multiplicand</td>
+      <td valign="baseline">Holds values read from memory for use in arithmetic operations</td>
+    </tr>
+    <tr>
+      <td valign="baseline">AR</td>
+      <td valign="baseline"><b>A</b>ckumulato<b>r</b></td>
+      <td valign="baseline">Accumulator</td>
+      <td valign="baseline">&nbsp;</td>
+    </tr>
+    <tr>
+      <td valign="baseline">MR</td>
+      <td valign="baseline"><b>M</b>ultiplikato<b>r</b></td>
+      <td valign="baseline">Multiplicator</td>
+      <td valign="baseline">&nbsp;</td>
+    </tr>
+    <tr>
+      <td valign="baseline">IR</td>
+      <td valign="baseline"><b>I</b>nstruktions<b>r</b>egister</td>
+      <td valign="baseline">Instruction register</td>
+      <td valign="baseline">Holds the word containing the two instructions, one of
+        which is to be executed next</td>
+    </tr>
+    <tr>
+      <td valign="baseline">KR</td>
+      <td valign="baseline"><b>K</b>ontroll<b>r</b>&auml;knare</td>
+      <td valign="baseline">Program Counter</td>
+      <td valign="baseline">Holds the memory address of the next instruction to be
+        executed, as well one bit to indicate whether to execute the left or
+        right instruction in IR</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Arithmetic operations</h3>
+
+<p>The arithmetic unit used offers support for addition and complementation,
+logical multiplication (the 'logical and' operation) as well as
+multiplication and division within SMIL's fixed-point number format
+restrictions. The addition and multiplication operations may result in an
+arithmetic overflow, if the result lies outside the [&minus;1 ... 1) range of
+SMIL's fixed-point format. To signal this, the AR (accumulator) register has
+an extra bit, '00', which contains the expected sign of the result of the
+operation. If after a given operation bits 00 (the expected sign) and bit 0
+(the actual sign) differ, there has been an overflow. Conditional
+instructions permit the programmer to take appropriate action if this the
+case.</p>
+
+<p>Addition operates very straightforwardly, adding the contents of MD to AR.
+In order to perform a subtraction, the contents of MD can be complemented on
+its way to the arithmetic unit, under program control.</p>
+
+<p>Logical multiplication, also known as 'logical and', is performed between
+individual bits of the MD and AR register, with the result placed in AR.
+Again, the programmer can choose to complement MD's contents on the way to
+the arithmetic unit.</p>
+
+<p>Multiplication is performed on the contents of the MR (multiplicator) and
+MD (multiplicand) registers. Because a multiplication generally results in as
+many significant digits as the sum of the significant digits in the
+multiplicator and multiplicand, the result requires two registers.
+Specifically, the most significant part of the result remains in AR, and the
+least significant part in MR. There is also an instruction that retains only
+the most significant part in AR, and discards the least significant part.</p>
+
+<p>The actual multiplication algorithm performs 39 identical steps:</p>
+<ul>
+  <li>if MR<sub>39</sub> = 1, add MD to AR</li>
+  <li>shift AR and MR together right one step arithmetically &mdash; i.e., both MR
+    and AR are shifted right one step, AR<sub>39</sub> is shifted into
+    MR<sub>0</sub>, and AR's sign bit (AR<sub>0</sub>) maintains its previous
+    value</li>
+</ul>
+After 39 such steps, AR contains the most significant bits of the result, and
+MR is shifted right one extra step, so that the least significant 39 bits of
+the result are in the least significant 39 bits of MR.
+
+<p>Division is performed on the contents of AR, by the contents of MD, with
+the result placed in MR, but in bit-reversed order. To get the result in
+useful format, a special instruction (N28) is used to reverse the contents of
+MR into AR.</p>
+
+<p>The actual algorithm performs 39 identical steps similarly to the
+multiplication algorithm, though in this case the steps are different:</p>
+<ul>
+  <li>check whether AR and MD have the same sign (i.e., whether
+    AR<sub>0</sub> = MD<sub>0</sub>)</li>
+  <li>shift AR left</li>
+  <li>if AR and MD had the same sign, shift MR right, setting MR<sub>39</sub>
+    to <tt>1</tt>, and subtract MD from AR</li>
+  <li>if AR and MD had different signs, shift MR right, setting
+    MR<sub>39</sub> to <tt>0</tt>, and add MD to AR</li>
+</ul>
+After 39 such steps, shift MR right one extra step, set MR<sub>0</sub> to
+<tt>1</tt> (to handle rounding errors), and change MR<sub>39</sub> from 1 to
+0 or from 0 to 1. AR now contains the remainder multiplied by 2<sup>39</sup>,
+and MR contains the quotient, but in reverse order &mdash; the
+quotient's most significant bit is stored in MR's least significant bit, etc.
+SMIL has a special instruction (N28) to reverse the contents of MR into AR,
+which should be used to retrieve the actual quotient. If you wish to use the 
+remainder, you need to place it elsewhere <em>before</em> you retrieve the 
+quotient using N28.
+
+<!-- #The SMIL Computer!Instruction Set# -->
+<h2>Instruction Set</h2>
+
+<p>The instruction set chosen for SMIL comprises 13 different instruction
+groups, with the 'extra' bits specifying different options for or variants of
+the instruction in question. Two of the extra bits have a common meaning
+across all instructions: Bit <tt>e<sub>3</sub></tt> (the second least
+significant bit in any instruction half-word) is used to signify that the AR
+register should be cleared before executing the rest of the instruction.
+Similarly, bit <tt>e<sub>4</sub></tt> (the least significant bit) signals a
+'conditional stop' location, and instructs SMIL to halt after executing this
+instruction <em>if</em> the left toggle switch on the control panel is in the
+'<tt>Stopp Villk.</tt>' ('Stop Condition') position. This bit essentially
+allows the programmer to set a simple form of breakpoint, which can be
+enabled by setting the appropriate toggle switch position the control
+panel. The bits <tt>e<sub>1</sub></tt> and <tt>e<sub>2</sub></tt> are used by
+each individual instruction group to specify the specific operation to
+perform.</p>
+
+<p>Instructions are most easily described in the format
+'N<em>XY</em>', where N refers to the address part
+of the instruction (12 bits, 3 hex digits), <em>X</em> shows to the
+instruction code (4 bits, 1 hex digit) and <em>Y</em> shows the
+extra bits (4 bits, 1 hex digit), with the caveat that bits
+<tt>e<sub>3</sub></tt> and <tt>e<sub>4</sub></tt> may be specified in
+addition to what is shown (though in some cases, bit <tt>e<sub>3</sub></tt>
+is explicitly listed). In this format, this is the complete SMIL instruction
+set, grouped by instruction type. In this listing, <em>[N]</em> refers to the
+contents of memory location N, <em>N<sub>L</sub></em> refers to the <em>L</em>eft instruction
+at address N, and <em>N<sub>R</sub></em> refers to the <em>R</em>ight instruction
+at address N.</p>
+
+<table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Tape Input</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N00</td><td rowspan="3" class="pad"></td>
+      <td valign="baseline">Read one word from Tape Reader into AR, and store at address N</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N04</td>
+      <td valign="baseline">Read one word from Tape Reader into AR (N ignored)</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N08</td>
+      <td valign="baseline">Read one tape row &mdash; 4 bits &mdash; from Tape Reader into
+        AR<sub>36...39</sub> (N ignored)</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Logical Product ('And')</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N10</td><td rowspan="4" class="pad"></td>
+      <td valign="baseline">(AR + [N]) &and; MR &rarr; AR, 0 &rarr; MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N14</td>
+      <td valign="baseline">(AR &minus; [N]) &and; MR &rarr; AR, 0 &rarr; MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N18</td>
+      <td valign="baseline">(AR + |[N]|) &and; MR &rarr; AR, 0 &rarr; MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N1C</td>
+      <td valign="baseline">(AR &minus; |[N]|) &and; MR &rarr; AR, 0 &rarr; MR</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Register Transfer</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N20</td><td rowspan="2" class="pad"></td>
+      <td valign="baseline">MR &rarr; AR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N28</td>
+      <td valign="baseline">MR<sub>0...39</sub> &rarr; AR<sub>39...0</sub>.<br>
+        Note: This is the 'reverse MR into AR' instruction used to retrieve a
+        division result.</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Store</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N30</td><td rowspan="4" class="pad"></td>
+      <td valign="baseline">AR &rarr; N</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N34</td>
+      <td valign="baseline">AR<sub>0...11</sub> &rarr; N<sub>0...11</sub></td>
+    </tr>
+    <tr>
+      <td valign="baseline">N38</td>
+      <td valign="baseline">AR<sub>20...31</sub> &rarr; N<sub>20...31</sub></td>
+    </tr>
+    <tr>
+      <td valign="baseline">N3C</td>
+      <td valign="baseline">AR<sub>0...11,20...31</sub> &rarr; N<sub>0...11,20...31</sub></td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Addition to AR and MR</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N40</td><td rowspan="4" class="pad"></td>
+      <td valign="baseline">AR + [N] &rarr; AR, MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N44</td>
+      <td valign="baseline">AR &minus; [N] &rarr; AR, MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N48</td>
+      <td valign="baseline">AR + |[N]| &rarr; AR, MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N4C</td>
+      <td valign="baseline">AR &minus; |[N]| &rarr; AR, MR</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Addition to AR only</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N50</td><td rowspan="4" class="pad"></td>
+      <td valign="baseline">AR + [N] &rarr; AR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N54</td>
+      <td valign="baseline">AR &minus; [N] &rarr; AR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N58</td>
+      <td valign="baseline">AR + |[N]| &rarr; AR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N5C</td>
+      <td valign="baseline">AR &minus; |[N]| &rarr; AR</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Multiplication</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N60</td><td rowspan="2" class="pad"></td>
+      <td valign="baseline">MR &times; [N] + AR &times; 2<sup>&minus;39</sup> &rarr; AR, MR</td>
+    </tr>
+    <tr>
+      <td valign="baseline">N72</td>
+      <td valign="baseline">MR &times; [N] + 2<sup>&minus;40</sup> &rarr; AR<br>
+        Single precision</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Division</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N80</td><td rowspan="1" class="pad"></td>
+      <td valign="baseline">AR &divide; [N] &rarr; MR<sub>39...0</sub></td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Jumps</th>
+    </tr>
+    <tr>
+      <td valign="baseline">N90</td><td rowspan="8" class="pad"></td>
+      <td valign="baseline">Jump to N<sub>L</sub></td>
+    </tr>
+    <tr>
+      <td valign="baseline">N94</td>
+      <td valign="baseline">Jump to N<sub>R</sub></td>
+    </tr>
+    <tr>
+      <td valign="baseline">N98</td>
+      <td valign="baseline">Jump to N<sub>L</sub> if AR<sub>00</sub> &ne; AR<sub>0</sub></td>
+    </tr>
+    <tr>
+      <td valign="baseline">N9C</td>
+      <td valign="baseline">Jump to N<sub>R</sub> if AR<sub>00</sub> &ne; AR<sub>0</sub></td>
+    </tr>
+    <tr>
+      <td valign="baseline">NA0</td>
+      <td valign="baseline">Jump to N<sub>L</sub> if AR &ge; 0</td>
+    </tr>
+    <tr>
+      <td valign="baseline">NA4</td>
+      <td valign="baseline">Jump to N<sub>R</sub> if AR &ge; 0</td>
+    </tr>
+    <tr>
+      <td valign="baseline">NA8</td>
+      <td valign="baseline">Jump to N<sub>L</sub> if AR &lt; 0</td>
+    </tr>
+    <tr>
+      <td valign="baseline">NAC</td>
+      <td valign="baseline">Jump to N<sub>R</sub> if AR &lt; 0</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Control Flow</th>
+    </tr>
+    <tr>
+      <td valign="baseline">NB0</td><td rowspan="2" class="pad"></td>
+      <td valign="baseline">halt execution (N ignored)</td>
+    </tr>
+    <tr>
+      <td valign="baseline">NB8</td>
+      <td valign="baseline">no operation (N ignored)</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Normalization</th>
+    </tr>
+    <tr>
+      <td valign="baseline">NC0</td><td rowspan="1" class="pad"></td>
+      <td valign="baseline">Shift AR left until AR<sub>0</sub> &ne; AR<sub>1</sub>. Steps
+        shifted &times; 2<sup>&minus;31</sup> &rarr; MR<sub></sub><br>
+        AR = 0 &rArr; 63 &times; 2<sup>&minus;31</sup> &rarr; MR</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Shifts</th>
+    </tr>
+    <tr>
+      <td valign="baseline">ND0</td><td rowspan="3" class="pad"></td>
+      <td valign="baseline">Shift AR left N steps</td>
+    </tr>
+    <tr>
+      <td valign="baseline">ND8</td>
+      <td valign="baseline">Shift AR right N steps arithmetically (maintaining sign bit)</td>
+    </tr>
+    <tr>
+      <td valign="baseline">NDC</td>
+      <td valign="baseline">Shift AR right N steps (shifting in zeros)</td>
+    </tr>
+  </tbody>
+</table><table>
+  <tbody>
+    <tr>
+      <th colspan="3" align="left">Typewriter output</th>
+    </tr>
+    <tr>
+      <td valign="baseline">NF0</td><td rowspan="2" class="pad"></td>
+      <td valign="baseline">Print AR<sub>36...39</sub> as a hexadecimal character (N
+      ignored)</td>
+    </tr>
+    <tr>
+      <td valign="baseline">NF8</td>
+      <td valign="baseline">Print typographical character N<br>
+        Typographical characters are:<br>
+    <table>
+          <tbody>
+            <tr>
+              <th>N</th>
+              <th>Character</th>
+            </tr>
+            <tr>
+              <td valign="baseline">0</td>
+              <td valign="baseline"><em>space</em></td>
+            </tr>
+            <tr>
+              <td valign="baseline">1</td>
+              <td valign="baseline"><em>carriage return</em></td>
+            </tr>
+            <tr>
+              <td valign="baseline">2</td>
+              <td valign="baseline"><tt></tt>.</td>
+            </tr>
+            <tr>
+              <td valign="baseline">3</td>
+              <td valign="baseline"><em>tabulator</em></td>
+            </tr>
+            <tr>
+              <td valign="baseline">4</td>
+              <td valign="baseline"><tt>&minus;</tt></td>
+            </tr>
+            <tr>
+              <td valign="baseline">5</td>
+              <td valign="baseline"><tt>+</tt></td>
+            </tr>
+            <tr>
+              <td valign="baseline">6</td>
+              <td valign="baseline"><tt>_</tt></td>
+            </tr>
+            <tr>
+              <td valign="baseline">8</td>
+              <td valign="baseline"><tt>i</tt></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- #The SMIL Computer!Drum Memory# -->
+<h2>Drum Memory</h2>
+<p>
+SMIL's main memory consists of a rotating brass drum, coated with iron oxide,
+the same material used in audio and video tapes for magnetic storage. Along this
+cylinder, 82 read/write heads are placed. 80 bits are used for data, divided 
+into two 'halves', each holding one complete 40-bit word. The remaining two
+are used for timing: One, the <em>clock pulse channel</em>, was divided into 1024
+cells, each containing a magnetic dipole (1-0 combination) to allow locating 
+individual data row. The second, the <em>reference pulse channel</em>, contains
+only a single dipole, which is used to locate the beginning of a revolution
+on the drum.
+</p><p>
+The <em>reference</em> and <em>clock</em> pulses are used to control a counter,
+which keeps track of the row currently available to read from or write to.
+The reference pulse resets the counter to zero at the beginning of each
+revolution, while the clock pulse increments the counter by one for each row
+on the drum that passes by.
+</p><p>
+SMIL's memory range is 12 bits = 4096 different addresses. However, SMIL's drum
+memory only contains 1024 rows, each containing 2 words, for a total of 2048
+words - the original SMIL has some room for memory expansion. To address a 
+specific word in the drum, the most significant bit of the address is ignored,
+the next bit is used to select one half of the drum, and the remaining ten bits
+are used to select one of the 1024 drum rows.
+</p><p>
+The drum itself rotates at circa 5800 rpm; a new clock pulse is generated 100000
+times per second, every 10 &micro;s.</p>
+
+<!-- #The SMIL Computer!Instruction Timing and Execution# -->
+<a name="InstructionTiming"></a><h2>Instruction Timing and Execution</h2>
+<p>
+SMIL's instruction cycle can be partitioned into a small number of distinct
+phases, each with distinct time requirements. Not all instructions go through 
+all phases, of course. Only those
+instructions that perform actual I/O - specifically, the instructions to
+read data from tape and to write data to the typewriter - perform any 
+Asynchronous I/O; Only instructions that read from or write to memory need to
+wait for that memory location; Only long instructions (multiplication,
+division) go through the long instruction execution phrase; and if
+the next instruction is already in the instruction register, then there may not 
+be any need to wait for its memory location. All of this is summarized in detail
+in this table where each phase's execution time is shown, and 
+the phases for each instruction are marked with '&diams;'.
+<table>
+<colgroup colspan="3"></colgroup><colgroup colspan="19" align="center"></colgroup>
+<tbody>
+<tr><th rowspan="2" colspan="2">Phase</th><th rowspan="2">Execution time</th><th colspan="19">Instructions</th></tr>
+<tr>
+<td><tt>00</tt></td><td><tt>04,08</tt></td><td><tt>1</tt></td><td><tt>2</tt></td><td><tt>3</tt></td><td><tt>4</tt></td><td><tt>5</tt></td>
+<td><tt>6</tt></td><td><tt>7</tt></td><td><tt>8</tt></td><td><tt>9</tt></td><td><tt>A</tt></td>
+<td><tt>B0</tt></td><td><tt>B8</tt></td><td><tt>C</tt></td><td><tt>D</tt></td><td><tt>E</tt></td><td><tt>F</tt></td></tr>
+<tr><td>a</td><td>Prepare Instruction</td><td>6 clock pulses = 60 &micro;s</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+</tr>
+<tr><td>b</td><td>Asynchronous I/O</td><td>not predictable</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td>
+<td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td>
+<td align="center"></td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">&diams;</td>
+</tr>
+<tr><td>c</td><td>Await memory location</td><td>0&ndash;1024 clock pulses = 0&ndash;10240&micro;s</td>
+<td align="center">&diams;</td><td align="center">|</td><td align="center">&diams;</td><td align="center">|</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">|</td><td align="center">|</td>
+<td align="center"></td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td><td align="center">|</td>
+</tr>
+<tr><td>d</td><td>Short Instruction Execution</td><td>9 clock pulses = 90 &micro;s</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+<td align="center"></td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td>
+</tr>
+<tr><td>e<sub>1</sub></td><td>Long Instruction, fixed time</td><td>43 clock pulses = 430&micro;s</td>
+<td align="center"></td><td align="center"></td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center"></td><td align="center"></td><td align="center"></td>
+<td align="center">&diams;</td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center">|</td><td align="center">|</td>
+<td align="center"></td><td align="center"></td><td align="center">|</td><td align="center">|</td><td align="center"></td><td align="center"></td>
+</tr>
+<tr><td>e<sub>2</sub></td><td>Long Instruction, variable time</td><td>4&ndash;43 clock pulses for 0&ndash;39 shifts = 40&ndash;430&micro;s</td>
+<td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td>
+<td align="center"></td><td align="center"></td><td align="center"></td><td align="center">|</td><td align="center">|</td>
+<td align="center"></td><td align="center"></td><td align="center">&diams;</td><td align="center">&diams;</td><td align="center"></td><td align="center"></td>
+</tr>
+<tr><td>f</td><td>Await next instruction</td><td>0&ndash;1024 clock pulses = 0&ndash;10240&micro;s</td>
+<td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td>
+<td align="center"></td><td align="center"></td><td align="center"></td><td align="center">&diams;</td><td align="center">&diams;</td>
+<td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td>
+</tr>
+</tbody></table>
+Notes: 
+<ol><li>For instruction 3, phase d (short instruction execution) takes 30 clock pulses = 300&micro;s instead of the normal 9 clock pulses = 90&micro;s</li>
+<li>For all instructions, if the instruction was a right instruction, then a new instruction must be fetched, and phase f will be executed</li>
+</ol>
+The table above allows us to calculate, for all instructions except 0 and F, the amount of time the instruction takes, simply by adding up the execution times for each phase
+of the instruction.
+</p>
+
+<!-- #The SMIL Computer!Sound# -->
+<a name="Sound"></a><h2>Sound</h2>
+<p>
+SMIL was operated from a single <a href="#ControlPanel">Control Panel</a> connected directly to the CPU,
+with the <a href="#TapeReader">Tape Reader</a> and <a href="#Typewriter">Typewriter</a> easily accessible.
+Additionally, one of the bits inside SMIL was connected to a loudspeaker, placed in the bottom center
+of the control panel, through which the operator could listen to SMIL's operation. The volume of the
+generated sound is adjusted through a volume control to the right of the speaker. Previously, these items
+were displayed in SMILemu for decoration only, but as of SMILemu 1.2,
+sound is finally emulated. Unfortunately, the author has been unable to gain certainty about which bit
+of SMIL was connected to the speaker, and precisely how the sound would be generated from this bit. 
+At the 50th anniversary celebrations in Lund in 2006, it was suggested
+that it was bit 38 of the AR register that was connected to the speaker, so this is the default bit that
+is connected (but see below). In order to have
+<i>some</i> sound generation, the value of this bit is translated into a simple square wave, with bottoms
+whenever the bit is zero, and tops whenever the bit is one. This may not, in fact, give an accurate 
+representation of what SMIL sounded like, but it is the closest I am able to achieve at this time, and
+without more, clearer information on the subject.
+</p>
+<p>
+Whereas sound generation in SMIL was hardwired to one particular bit, SMILemu lets you choose which
+bit to use for generating sound: Any bit in any one of the registers can be chosen. The generation of
+sound can also be turned off entirely. See the <i>Sound</i> pane of the <a href="#Options">Options</a>
+window for details.
+</p>
+
+<!-- #The SMIL Computer!Notes# -->
+<h2>Notes</h2>
+<p>
+SMIL contained approximately 2000 vacuum tubes of 10 different types.
+The average expected life of any such vacuum tube was approximately 5000 hours,
+and through measurements and preventive maintenance, large amounts of
+unexpected downtime were prevented; this included running test programs
+which exercised parts of SMIL with the same instructions under differing
+conditions.
+</p><p>
+SMIL also contained circa 200 germanium diodes. The total heat dissipated by the 
+machine was approximately 12 kW, which was transported away by two fans
+at a circulation of 4000 m<sup>3</sup> per hour.
+</p>
+
+<!-- #The SMIL Emulator SMILemu# -->
+<h1>The SMIL Emulator <em>SMILemu</em></h1>
+
+<p>The SMIL emulator <em>SMILemu</em> attempts to emulate the initial, unexpanded version of
+SMIL as faithfully as possible, given the information available, including
+its actual operating speed and its operation using a binary
+lights-and-push buttons control panel &mdash; labeled in the original Swedish, of
+course. It is implemented in Java 5, and should run on any compatible virtual
+machine and runtime environment. It uses a graphical user interface (GUI)
+based on the standard Java Swing components as well as some bespoke
+components, in particular for the control panel itself, but it should be
+straightforward to use for anyone familiar with operating modern graphical
+user interfaces in general.</p>
+
+<p>I wrote SMILemu starting in late 2005 based on general interest in early
+computers, more specifically because 2006 would be SMIL's 50<sup>th</sup>
+anniversary, and in order to be able show students at <a
+href="http://www.lu.se/">Lund University</a> and <a
+href="http://www.lth.se/">Lund Institute of Technology</a> (and in particular
+members of its <a href="http://www.df.lth.se/">computer club</a>, of which I
+was an early member) what progress has been made in computing in a mere 50
+years &mdash; less than the average life expectancy &mdash; especially keeping in mind
+that 50 years ago, there was only <em>one</em> SMIL computer available in all
+of Lund.</p>
+
+<!-- #The SMIL Emulator SMILemu!Getting SMILemu# -->
+<h2>Getting SMILemu</h2>
+
+<p>SMILemu is made available in three forms:</p>
+<ul>
+  <li>as a generic Java archive (<tt><a href="http://www.smilemu.org/SMILemu-1.2.jar">SMILemu-1.2.jar</a></tt>)</li>
+  <li>as a Mac OS X Application Bundle (<font
+    face="sans-serif">SMILemu.app</font>) on a Mac OS X Disk Image (<font
+    face="sans-serif"><a href="http://www.smilemu.org/SMILemu-1.2.dmg">SMILemu-1.2.dmg</a></font>)</li>
+  <li>as a Java Applet, at <tt><a href="http://www.smilemu.org/applet.html">http://www.smilemu.org/applet.html</a></tt></li>
+</ul>
+
+<!-- #The SMIL Emulator SMILemu!Starting SMILemu# -->
+<h2>Starting SMILemu</h2>
+
+<p>To run SMILemu.app under Mac OS X 10.4 or later with Java 5 installed,
+you only need to double-click it, which
+will locate the appropriate Java 5 runtime and launch the emulator. On other
+platforms such as Microsoft Windows XP, you may be able to
+double-click SMILemu-1.2.jar, which in turn launches the Java Runtime and the
+emulator. Otherwise, you may have to manually launch the emulator from a
+commend-line terminal, usually with the command</p>
+<pre>  java -jar SMILemu-1.2.jar<br></pre> If you are using an older version of
+Mas OS X and have managed to install Java 5 anyway, you may
+have to invoke the Java virtual machine directly, using 
+<pre>  /System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home/bin/java -jar SMILemu-1.2.jar</pre>
+
+<p>Once SMILemu has started, you will be presented with its three default
+windows. All windows can be resized, and will act in whatever way is most
+suitable.</p>
+
+<!-- #The SMIL Emulator SMILemu!Main Windows# -->
+<h2>Main Windows</h2>
+<a name="ControlPanel"></a>
+
+<h3>Control Panel</h3>
+<img alt="Control Panel" src="images/ControlPanel.png" border="0">
+
+<p>The Control Panel is the operator's main interface for working with SMIL.
+As you can see, the interface is entirely based on lights and push buttons,
+with the exception of two toggle switches at the bottom right of the
+panel.</p>
+
+<p>The top of the panel is dominated by four almost, but not quite, identical
+rows of 40 lights. The first three represent the three registers involved in
+arithmetic and logical operations, from top to bottom:</p>
+<ul>
+  <li>MD: <b>M</b>ultiplican<b>d</b></li>
+  <li>AR: <b>A</b>ccumulato<b>r</b></li>
+  <li>MR: <b>M</b>ultiplicato<b>r</b></li>
+</ul>
+The MD, AR and MR registers all have their contents displayed, all 40 bits,
+numbered from 0 for the most significant bit to 39 for the least significant
+bit. The MD row actually displays two lights for its bit 0. The AR row shows,
+in addition to the AR register's main content, bit '00' to the left of bit 0;
+this '00' bit contains the 'expected sign' of the result of any arithmetic
+operation. If this bit <em>differs</em> from AR's bit 0, then an overflow
+occurred in the operation in question, and the operation's result could not
+be represented in the register. For instance, if you attempt to add 0.5 and
+0.75, the result would be 1.25 &mdash; but since SMIL's fixed-point number range
+only goes from &minus;1.0 inclusive to 1.0 exclusive, 1.25 cannot be represented,
+an overflow will occur, and be indicated by bit '00' being 0 (showing that
+the expected sign for any sum of two positive values is also positive),
+whereas bit 0 will be 1. AR further has an extra bit '40' to the right of bit
+39, which shows the value of any bit that was recently shifted right from out
+of the AR register. (It was there on the original SMIL, so it's in the
+emulator!)
+
+<p>Each register also has a push button to the left and one to the right,
+marked '<tt>Noll</tt>' (Swedish for 'zero'), which will clear to zero the
+left and right half of the register, respectively. The MD and AR registers,
+but not the MR register, also have individual push buttons underneath each bit
+of register content, which allow setting each individual bit to one. If you
+accidentally set a bit to one that you had not intended to, you need to clear
+the appropriate half of the register using its <tt>Noll</tt> button, and
+manually set all the ones again as necessary.</p>
+
+<p>Below the three arithmetic registers is the instruction register, IR. Like
+MD and AR, it has a full complement of both lights and buttons for each bit
+in the register. Its bits are not marked 0 to 39, however, but are instead
+labeled by their use within an instruction: The first 12 bits in each
+half-word are labeled '<tt>Adress</tt>' (Swedish for 'address'), the next four
+bits are marked 'Operation' (which needs no translation), and the final four
+bits are labeled individually as <tt>e<sub>1</sub></tt>,
+<tt>e<sub>2</sub></tt>, <tt>e<sub>3</sub></tt>, and <tt>e<sub>4</sub></tt>.
+Again, there is one button on each side to clear either half-word, marked
+'<tt>Noll</tt>'.</p>
+
+<p>The final row of lights-and-buttons contains a number of groups, and even
+individual lights and buttons. We only care about the largest group of these,
+at the center of the row, between two labels marked 'KR'. This group of a
+total of 13 bits, marked '11' to '0' and then '00', contain the contents of
+the KR register, which is the program counter. Just to the left of bit 11 is
+the 'clear' button for KR, marked '<tt>Noll</tt>' as usual. The first 12
+bits, bits 11 to 0, contain the memory address of the next instruction to be
+executed; bit 00 indicates whether to execute the left or right instruction
+of the word (if bit 00 is zero, the left instruction is indicated; if bit 00
+is 1, the right instruction). The careful observer will note the presence of
+two lights with buttons, marked 'V' and 'H', just to the right of KR's bit
+00. 'V' is short for 'V&auml;nster', which is Swedish for 'left'; 'H' is short
+for 'H&ouml;ger', which is Swedish for 'right'. These two lights <em>also</em>
+indicate which half is to be executed next: 'V' will be lit whenever the left
+instruction is a left instruction, and 'H' will be lit whenever the next
+instruction is a right instruction. These two lights and their buttons are in
+other words intimately connected to KR's bit 00, but they offer a quicker
+at-a-glance view which half of the instruction will next be executed, than
+does one bit among many (such as bit 00 next to the other 12 KR bits).</p>
+
+<p>Of the remaining lights and buttons on the final row, only two more have
+any actual function within the SMIL emulator: The leftmost light, labeled
+<img alt="Pulse" src="images/PulseLabel.png">, is lit only while the emulated SMIL
+is running. It probably served a different purpose on the original SMIL, but
+here I have hijacked it for this particular bit of functionality. Finally,
+the button labeled '<tt>&Aring;terst&auml;ll</tt>' (which is Swedish for 'reset') just
+to the left of KR's <tt>Noll</tt> button resets all of SMIL's registers and
+all of its memory contents zero, which is the same state that SMIL is in
+immediately after it has been started. The remaining lights and buttons on
+this row have functions that I cannot discern or discover. Each button is
+connected to the corresponding light, so you can, if you wish, turn the
+lights on (and reset them to zero using the '<tt>&Aring;terst&auml;ll</tt>' button),
+but they will not affect the function of the emulated SMIL in any way.</p>
+
+<p>Below these five register rows is the bottom part of the panel, which
+contains, from left to right, the following:</p>
+<dl>
+  <dt>A clock</dt>
+    <dd>This clock, on the original SMIL, displays the total amount of time
+      that the power to SMIL has been switched on, using the digits for the
+      number of hours, and the hand for minutes within the last hour. In
+      SMILemu, it displays the number of hours and minutes since SMILemu was started.</dd>
+  <dt></dt>
+
+    <dt>A column with one light and two buttons, labeled '<tt>GL</tt>'</dt>
+      <dd>While I have no proof, I suspect 'GL' to stand for
+        '<b>Gl</b>&ouml;dsp&auml;nning', which would suggest that these buttons are
+        intended to switch the heating power to SMIL's vacuum tubes on and
+        off, and the light above them indicates when this power is on. Since
+        I do not know, however, I have not implemented any functionality for
+        this light and these buttons. </dd>
+  <dt></dt>
+
+    <dt>A column with one light and two buttons, labeled '<tt>MS</tt>'</dt>
+      <dd>Again with no proof, I am guessing that 'MS' stands for
+        '<b>M</b>atnings<b>s</b>p&auml;nning', which would be the power to run
+        the actual processing, and with the light above similarly to indicate
+        that this was on or off. Again, for lack of  information, no
+        functionality has been implemented. </dd>
+  <dt></dt>
+
+    <dt>Two labels, '<tt>Till</tt>' and '<tt>Fr&aring;n</tt>', in line with the
+    buttons in the previous columns</dt>
+      <dd>'Till' means 'On' and 'Fr&aring;n' means 'Off', which works well with my
+        guesses about their function above. </dd>
+  <dt></dt>
+  
+    <dt>Five lights, labeled 'S&auml;kring' (Swedish for 'fuse')</dt>
+      <dd>These lights would indicate whether the fuse for any one of the
+        five power supplies (as SMIL used five different voltages) had blown.
+        In this implementation, they are constantly unlit.</dd>
+  <dt></dt>
+
+    <dt>A round loudspeaker grille</dt>
+      <dd>This hides the loudspeaker that would generate sound from one
+        of the bits in one of SMIL's registers, as described in the <a href="#Sound">Sound</a>
+        section. See also the <a href="#Options">Options</a> window for how to
+        configure SMILemu's sound generation emulation.<br>
+      </dd>
+  <dt></dt>
+
+    <dt>A volume control for the loudspeaker</dt>
+      <dd>Turning the volume control will adjust the volume of the sound
+        generated by SMILemu. See the <a href="#Sound">Sound</a>
+        section for information about SMIL's sound generation and SMILemu's emulation
+        thereof, and the
+        <a href="#Options">Options</a> window for its configuration.<br>
+      </dd>
+  <dt></dt>
+
+    <dt>A three-position toggle switch, labeled '<tt>Stegvis</tt>' above and
+    '<tt>Stopp Villk.</tt>' below</dt>
+      <dd>This switch, which will remain in whichever position you leave it,
+        sets SMIL to run either single-stepping in its top position
+        '<tt>Stegvis</tt>' (literally 'step-wise'), conditionally stopping (if
+        it encounters an instruction with <tt>e<sub>3</sub></tt> set) in its
+        bottom position '<tt>Stopp Villk.</tt>' (which translates into 'stop
+        conditionally'), or running freely in its unlabeled center
+      position.</dd>
+  <dt></dt>
+
+    <dt>A three-position toggle switch, labeled '<tt>Remsstart</tt>' above
+    and '<tt>Start</tt>' below</dt>
+      <dd>This switch is spring-loaded and will automatically return to its
+        idle, unmarked center position. Pushing it momentarily upwards to
+        '<tt>Remsstart</tt>' will initiate SMIL's bootstrap sequence, as
+        described at <a href="#Bootstrap">Bootstrap Sequence</a>.<br>
+        Pushing this switch down into its '<tt>Start</tt>' position will, not
+        surprisingly, start SMIL running. If SMIL is set to run in
+        single-step mode (<tt>Stegvis</tt>), then this will execute a single
+        instruction; otherwise, SMIL will keep running until it encounters an
+        instruction to halt (either an NB0 instruction, or, if it is running
+        in conditional stopping mode (<tt>Stopp Villk.</tt>), when it
+        encounters an instruction whose <tt>e<sub>3</sub></tt> bit is set).
+        Note that this will only start SMIL once for each time that you press
+        it: Keeping it pressed while SMIL is in single-step mode will
+        <em>not</em> step through the instructions one by one, you will
+        actually have to click the toggle switch once for each step.</dd>
+</dl>
+<p>
+When the Control Panel Window is resized, the Control Panel will be drawn 
+centered within the window at its maximum possible size,  at its proper aspect
+ratio. You can make the Control Panel as big or
+as small as you wish; it will continue functioning as best possible.
+</p>
+<a name="TapeReader"></a>
+
+<h3>Tape Reader</h3>
+<img alt="Tape Reader" src="images/TapeReader.png" border="0">
+
+<p>The Tape Reader shows a visual representation of a tape loaded into SMIL's
+tape reader. The tape has a series of tractor holes, one in each potential
+data row. Each row has 5 positions, where a hole in any given position
+represents a '1', and the absence of a hole represents a '0'. When SMIL reads
+a tape, it uses the bottom-most of the 5 holes to indicate that the other 4
+holes contain valid data. In other words, any row whose the bottom-most hole
+is punched contains 4 bits of actual data for SMIL, whereas any row
+<em>not</em> having the lowest row punched is simply ignored. This allows us
+to easily separate groups of 4-bit-data rows on the tape with empty,
+non-data-carrying rows. For that matter, more empty space can be left, to
+allow space for writing human-readable comments.</p>
+
+<p>The SMIL Emulator uses a very simple textual file format to store tapes.
+The contents of the data are written in hexadecimal digits, i.e., the digits
+0-9 and the letters a-f (or A-F). Any whitespace, including newlines, between
+any pair of hexadecimal digits will be expressed as a single empty column on
+the tape. Comments can be placed at the end of any line (or alone on a line),
+and are introduced by a '#' (hash) character, which is not included in the
+actual printed comment on the visible tape. An example would be:</p>
+<quote><pre># This is a comment
+00100 00200
+00300 00400 # this is a comment at the end of a line
+00500 00600
+# a comment on a line of its own,
+# in the middle of the data
+00700 00800
+00900 # we don't necessarily need a full word of data on one line
+00a00
+00b0000c0000d0000e00
+# nor do we need spaces or newlines, but they make things more readable
+# a trailing comment</pre>
+</quote>
+<p>For compatibility with Lars Gisl&eacute;n's SMIL emulator, a tape file can also
+be in a slightly different format, where the file is started by an
+introductory text of at most 3 lines, which is terminated by the sequence
+'#&lt;newline&gt;' (a hash character followed by a new-line sequence) &mdash; for
+example </p>
+<quote><pre>This is an introductory
+comment in an old-style
+SMIL tape file#
+00100 00200
+00300 00400
+00500 00600</pre>
+</quote>
+<p>When SMIL is initially started, the standard tape 'A1' is already loaded
+into the Tape Reader for your convenience. This tape is a bit special: It is
+a self-bootstrapping tape (requiring only the '<tt>Remsstart</tt> -
+<tt>Start</tt>' toggle switch sequence to load the A1 loader program into
+memory), and the A1 loader program is in turn used to load almost every other
+tape. Thus, the usual sequence of actions after starting SMILemu is
+to do just that.</p>
+
+<p>The blue line across the height of the tape indicates the position of the
+Tape Reader's read head. The tape is pulled from the right to the left
+through the reader, so the read head moves from left to right. This also
+allows relatively easy human deciphering of the tape. You can scroll through
+the length of the tape at any time that it is loaded. While SMIL is reading
+the tape, it attempts to keep the read head visible, so you can follow SMIL's
+progress through reading the tape.</p>
+
+<p>The Tape Reader also has two buttons, one to remove the current tape from
+the reader (leaving the reader entirely empty), and one to load a different
+tape into the reader, from a file of your choice.</p>
+<p> The tape will take all the vertical space available to it, and the scroll
+pane will be updated to allow scrolling through the entire length of the tape;
+thus you can get a closer look at the tape by increasing the height of the 
+Tape Reader window, or get am overview by reducing its height. Altering 
+the window's width will allow more or less of the tape's length do show.
+<a name="Typewriter"></a>
+
+<h3>Typewriter</h3>
+<img alt="Typewriter" src="images/Typewriter.png" border="0">
+
+<p>The Typewriter window contains the output printed by SMIL onto its
+typewriter. Additionally, a small triangle shows the position of the
+typewriter print head, i.e.., where the next character to be printed will be
+placed. The text printed can be selected and copied, for pasting into other
+programs of your choice. A button below the print area lets you clear the
+print area at your convenience.</p>
+<p>Resizing the Typewriter window simply exposes a greater portion of the 
+Typewriter's output within the window's scroll pane.</p>
+
+<!-- #The SMIL Emulator SMILemu!Secondary Windows# -->
+<h2>Secondary Windows</h2>
+
+<p>The SMIL Emulator also offers several other windows that allow easy access
+to the state if the emulated SMIL and to adjust the behaviour of the SMIL
+Emulator. These are not shown by default, but are available through the
+Windows menu (which is on the Menu Bar in Mac OS X when the Control Panel is
+the active window, and which on other platforms is at the top of the Control
+Panel window itself).</p>
+<a name="Memory"></a>
+
+<h3>Memory</h3>
+<img alt="Memory" src="images/Memory.png">
+
+<p>The Memory window shows the entire contents of SMIL's drum memory. This is
+presented with two rows per memory word, in three columns: <em>Address</em>,
+<em>Value</em> and <em>Instruction</em>. The <em>Address</em> column shows
+the memory address of the word presented on the current and the next row. The
+<em>Value</em> column shows the hexadecimal value (in two 5-digit groups) in
+the first row, and the real value, i.e., the fixed-point interpretation of
+the word, on the second row. The <em>Instruction</em> column interprets the
+word's contents as a pair of instructions, shows the word's left instruction
+on the first row, and its right instruction on the second row.</p>
+
+<p>More usefully, however, the <em>Value</em> column's contents can be
+modified, in order to write arbitrary values into SMIL's memory. This can be
+done either on the upper field, which will accept only hexadecimal values, or
+in the lower field, which accepts only decimal numbers (which will be clamped
+to stay within SMIL's numerical range: If you enter a value of &minus;3, the
+resulting value will be &minus;1, etc).</p>
+
+<p>At the lower right, there is also a button which permits clearing the
+contents of memory.</p>
+<a name="Registers"></a>
+
+<h3>Registers</h3>
+<img alt="Registers" src="images/Registers.png">
+
+<p>The Registers window shows the contents of SMIL's registers, MD, AR, MR,
+IR and KR. They are arranged in the same order as they are on the <a
+href="#ControlPanel">Control Panel</a>. MD, AR and MR are presented in
+hexadecimal and real (fixed-point) form, and just as in the <a
+href="#Memory">Memory</a> window, both forms can be edited to set these
+registers to arbitrary values. The AR register also permits setting bits 00
+and 40. If AR's bit 00 differs from its bit 0, this corresponds to an
+overflow condition, and is signalled by column the background of AR's
+real-value field to a light red.</p>
+
+<p>The instruction register, IR, is presented as two rows &mdash; one for the left
+half, and one for the right half &mdash; each with one 5-digit hexadecimal field
+for the value, and a textual description of the instruction represented. The
+hexadecimal values, again, can be edited, but the instruction description
+can't. The textual description field of the next instruction to be executed
+(as indicated by bit 00 of the program counter, KR) is colored a light
+green.</p>
+
+<p>The program counter, KR, is presented simply as 3 hexadecimal digits for
+the address's bits 11 to 0, and a single bit for bit 00.</p>
+
+<a name="DebugOutput"></a>
+<h3>Debug Output</h3>
+
+<p>The Debug window contains the output generated by the commands in the <a
+href="#ControlPanel">Control Panel</a>'s <a href="#DebugMenu">Debug
+menu</a>.</p>
+
+<a name="Options"></a>
+<h3>Options</h3>
+<img alt="Options" src="images/Options.png">
+
+<p>The Options window currently allows you to configure how SMILemu emulates SMIL.
+It has two panes: the first one allows you adjust the speed of emulation, and the second
+one allows you to configure SMILemu's emulated sound.</p>
+
+<p><i>Emulator Speed</i><br>
+By default, the SMIL Emulator attempts to emulate SMIL's
+performance faithfully, including memory access latency, Tape Reader and
+Typewriter I/O latency, and accurate instruction execution times.</br>
+The first pane presents a pair of radio buttons, a slider, and two checkboxes. 
+With the radio buttons, you choose whether to allow the emulator to run as fast as
+possible, or whether to attempt to emulate SMIL's original speed. The slider
+underneath the radio buttons lets you select a fraction or multiple of SMIL's
+original speed. The default multiple is, of course, 1, but the slider's range
+allows selection of speeds from 1/100 of SMIL's original speed to 100 times
+SMIL's original speed. Note: Your computer may not be fast enough to run the
+SMIL Emulator at the selected multiple of SMIL's original speed, and this
+slider won't be able to change that. The first checkbox allows you to select
+whether or not the executions times should include the time taken to perform
+asynchronous I/O &mdash; tape input and typewriter output &mdash; which lets
+you see how much the overall performance of a SMIL program is affected by the
+speed (or lack of same) of its I/O devices. The second checkbox similarly 
+allows you to in- or exclude the drum memory latency &mdash; the time spent 
+waiting for the drum memory to spin to the correct location &mdash; in the 
+execution time; this lets you gauge the impact of the choice of memory
+technology (drum memory instead of for instance magnetic core memory) on the
+execution time.</p>
+
+<p><i>Sound</i><br>
+The second pane presents a checkbox to enable or disable generation of 
+<a href="#Sound">sound</a> in SMILemu.
+Below this, a slider allows you to choose a buffer size for the generated audio (measured
+in milliseconds). This buffer size is likewise the delay between an event occurring and 
+the corresponding sound being audible. Larger buffer sizes make this delay more noticeable;
+smaller buffer sizes make is less so, but also demand higher performance from the emulator.
+You can choose any bugger size you like form 1 millisecond to 1000 milliseconds (a full second).
+However, if the buffer size you choose is too small, such that SMILemu notices that the generated
+sound is falling behind in playback, it will automatically increase the buffer size until 
+audio fidelity has been restored (at the cost of an increased delay).<br>
+Finally, the <i>Sound</i> pane presents two drop-down lists which allow you to choose which bit
+of which register is connected to the loudspeaker. The information the author has received 
+suggests that it is bit 38 of the AR register that was connected to the loudspeaker; in SMILemu,
+this is the bit that is connected by default. However, you can choose any register in the first
+drop-down, and any bit of that register in the second drop-down, and that bit will then be
+connected to the sound generation instead.<br> 
+</p>
+
+<a name="Help"></a>
+<h3>Help</h3>
+<img alt="Help" src="images/Help.png">
+<p>
+The Help window lets you browse SMILemu's documentation. At the very top, there are two buttons, 
+marked with left and right arrows, which will navigate back and forward through the documentation
+that you have been browsing. Next, a tree shows the various help topics &mdash; sections from the
+documentation &mdash; that are available. To view any one of them, select it in the tree view.
+Finally, a pane shows the selected help section itself, with embedded hyperlinks to other help
+sections or even to resources outside SMILemu's documentation. The former will open within the
+Help window; the latter cannot, so are displayed for you to copy-and-paste into any suitable
+external web browser, email program or similar that may be appropriate.
+</p>
+
+<!-- #The SMIL Emulator SMILemu!Menus# -->
+<h2>Menus</h2>
+
+<p>SMIL has a three menus at the top of the Control Panel (or, if you are
+using Mac OS X, in the menu bar when the Control Panel window is active).</p>
+<a name="TapeMenu"></a>
+
+<h3>The <em>Tape</em> Menu</h3>
+<img alt="Tape Menu" src="images/TapeMenu.png">
+
+<p>The <em>Tape</em> menu allows you load tapes from files on the file system,
+load one of the included sample tapes, and save an arbitrary memory range to
+a new tape file:</p>
+
+<h4>Load Tape</h4>
+
+<p>Lets you choose a file to load as a tape into the Tape Reader.</p>
+
+<h4>Load Standard Tape</h4>
+<img alt="Load Standard Tape" src="images/LoadStandardTapeMenu.png">
+
+<p>Lets you choose one of the included tapes, such as the standard bootstrap
+loader 'A1' or the 'Sine Wave' printing program, and load it into the Tape
+Reader.</p>
+
+<a name="SaveMemoryToTape"></a>
+<h4>Save Memory to Tape ...</h4>
+
+<p>Opens a dialog box in which you specify the start and end address of the
+memory range you wish to save to tape, as well as optional leading and
+trailing comments to be included in the file:</p>
+<img alt="Save Memory to Tape" src="images/SaveMemoryToTape.png">
+
+<p>After accepting the values, another dialog allows you to specify the file
+in which to save the data. This file will be in a textual format, suitable
+for loading into memory using the <em><a href="#A1">A1</a></em> tape loader, as described in
+the '<a href="#TapeReader">Tape Reader</a>' section.</p>
+<a name="WindowsMenu"></a>
+
+<h3>The <em>Windows</em> Menu</h3>
+<img alt="Windows menu" src="images/WindowsMenu.png">
+
+<p>The Windows menu lets you show, and bring to the front, any one of the
+SMILemu's windows. The individual windows have already been described
+in detail above, but just to recapitulate, they are the <a
+href="#TapeReader">Tape Reader</a>, <a href="#Typewriter">Typewriter</a>, <a
+href="#DebugOutput">Debug Output</a>, <a href="#Memory">Memory</a>, <a
+href="#Registers">Registers</a>, <a href="#Options">Options</a> and
+<a href="#Help">Help</a>.</p>
+<a name="DebugMenu"></a>
+
+<h3>The <em>Debug</em> Menu</h3>
+<img alt="Debug menu" src="images/DebugMenu.png">
+
+<p>Use the Debug menu's <em>Memory</em> item to print the contents of SMIL's
+memory or the currently loaded tape to the <a href="#DebugOutput">Debug Output</a>
+window:
+<dl>
+  <dt>Memory</dt>
+    <dd>will dump the current contents of SMIL's memory, in a textual format
+      quite similar to the presentation of memory contents in the
+      <a href="#Memory">Memory window</a>. Additionally, any sequence of memory words with
+      the same contents are represented by one single line, specifying an
+      address range rather than a single address.</dd>
+  <dt></dt>
+
+    <dt>Tape</dt>
+      <dd>will dump the contents of the tape currently in the <a
+        href="#TapeReader">Tape Reader</a>, in the same format as the memory
+        dump.</dd>
+  <dt></dt>
+
+	<dt>Trace Execution</dt>
+      <dd>specifies whether or not a detailed instruction trace &mdash; a sequential
+      list of each instruction executed, its pre- and post-conditions &mdash;
+      will be generated to the Debug Output window.</dd>
+</dl>
+</p>
+
+<h3>The <em>Help</em> Menu</h3>
+<img alt="Help menu" src="images/HelpMenu.png">
+
+<p>
+The Help Menu allows you to open a window which will display 
+the SMILemu documentation while SMILemu is running, or alternatively 
+to extract the documentation as HTML into a directory of your choice:
+</p>
+<dl>
+  <dt>Quick Start</dt>
+  <dd>opens the Help window, displaying the Quick Start document.</dd>
+  <dt></dt>
+  <dt>Manual</dt>
+  <dd>opens the Help window, displaying the beginning of the SMILemu Manual.
+	The SMILemu Manual is subdivided into sections (mainly because the HTML rendering 
+    	engine included in Java 5 takes an unacceptably long time to render the complete
+	SMILemu manual in one go), which can be selected in the upper pane of the Documentation
+	window.</dd>
+  <dt></dt>
+  <dt>Extract...</dt>
+  <dd>allows you to choose a directory into which the SMILemu Documentation will be extracted,
+	permitting you to read it with an HTML browser of your choice, even when SMILemu itself
+	is not running.</dd>
+</dl>
+
+<!-- #Programming SMIL# -->
+<h1>Programming SMIL</h1>
+
+<p>The SMIL Emulator can of course be programmed, just like the original
+SMIL. Several programs have been included as samples for you to play with,
+but it's always more fun to get your own hands dirty, isn't it? In this
+section we will discuss the included programs and describe certain SMIL
+programming conventions.</p>
+
+<!-- #Programming SMIL!Conventions# -->
+<h2>Programming Conventions</h2>
+
+<p>There are two main programming conventions to keep in mind when
+programming SMIL. We will give a brief overview of each &mdash; hopefully
+not too brief to be useful.
+</p>
+
+<a name="Bootstrap"></a><h3>Bootstrap Sequence</h3>
+
+<p>SMIL's instruction set is cunningly devised to allow for a simple sequence
+to bootstrap the computer from paper tape. The instruction '00000' &mdash; 'read 
+one word from tape, and store at address 000' &mdash; is 
+placed in the instruction register (IR)'s right half, the program counter (KR)
+is set to 'FFF right', and SMIL is started. This loads one word from tape into
+memory location 000, increments the program counter, which rolls over to
+point to address 000 Left., and reads as the next pair of instruction to execute 
+the very word that was just loaded from tape. These instructions can,
+in turn, read further instructions and data from tape, and so on, The boot
+sequence is initiated by pushing the right toggle switch to <tt>Remsstart</tt>,
+which sets the IR and KR registers as described above, and then simply starting 
+SMIL as normal (by pressing the toggle switch to <tt>Start</tt>).</p>
+
+<p>The tape usually loaded at boot time is the <a href="#A1">A1</a> program, which
+is considered SMIL's standard bootstrap system. A1's main function is to allow
+loading tapes into memory (according to the <a href="#TapeFormat">tape format</a> described
+below), but it also loads a few useful constants which are thus made available
+for other programs to use.</p>
+
+<a name="TapeFormat"></a><h3>Tape Format</h3>
+
+<p>The convention used by A1 for the tapes it loads is a simple one. The first 
+word of any conforming is a 'label', listing
+the memory range into which the tape is to be loaded, with the first address
+in the word's left (most significant) half's address part (bits 0 to 11 &mdash;
+where the address part of an instruction goes inside the appropriate
+half-word), and the last address in the word's right (least significant)
+half's address part (bits 20 to 31). For instance, if you wish to load 4
+words into memory starting at address 200, the tape would contain the label
+<tt>20000&nbsp;20300</tt>, followed by the actual 4 words. This is also the format
+generated when you save a memory range to a tape file using the <a
+href="#SaveMemoryToTape">Save Memory To Tape</a> menu item on the <a
+href="#TapeMenu">Tape menu</a>.</p>
+
+<a name="SubroutineCall"></a><h3>Subroutine Call</h3>
+
+<p>
+SMIL does not have any specific instructions for calling a subroutine; instead,
+subroutine calls are implemented using the standard unconditional jump instruction,
+and a common convention which is implemented jointly by the caller (the code
+which is calling the subroutine) and the callee (the subroutine being called).
+</p>
+<p>
+The <em>call site</em>, the code wishing to call the subroutine at address 
+<em>yyy</em>, must contain
+<table>
+<tr><th>Addr</th><td class="pad" rowspan="3"></th><th>Left</th><th>Right</th></tr>
+<tr><td valign="baseline"><em>xxx</em></td><td valign="baseline"><tt>-----</tt></td><td valign="baseline"><tt><em>xxx</em>52</tt></td><td valign="baseline"></td></tr>
+<tr><td valign="baseline"><em>xxx</em>+1</td><td valign="baseline"><tt><em>yyy</em>90</tt></td><td valign="baseline"><tt>-----</tt></td>
+</table>
+where <em>xxx</em> is the address of the <em>xxx</em>52 instruction itself. 
+This loads the word at location xxx, which will have the value 
+<tt>.....&nbsp;<em>xxx</em>52</tt>, into AR. The next instruction, <em>yyy</em>90,
+then performs an unconditional jump to address <em>yyy</em>.
+</p>
+<p>
+The subroutine, at address <em>yyy</em>, contains
+<table>
+<tr><th>Addr</th><th></th><th>Left</th><th>Right</th></tr>
+<tr><td valign="baseline"><em>yyy</em></td><td class="pad"></td><td valign="baseline"><tt>00D50</tt></td><td valign="baseline"><tt><em>zzz</em>38</tt></td></tr>
+</table>
+where <em>zzz</em> is the address of the last instruction of the subroutine. 
+The first of these instructions will  add the contents of address 00D to AR, which
+just happens to increment the 'right instruction's address' part of AR, such
+that AR<sub>20...31</sub> now contain <em>xxx</em>+1, which is the address
+of the word succeeding <em>xxx</em>. The second of these will store 
+AR<sub>20...31</sub> in <em>zzz</em><sub>20...31</sub>, or in other words,
+in the address part of the right instruction at address <em>zzz</em>. Thus,
+if the right instruction of the word at address were a jump instruction, its
+target address would now be the precise location in the caller where we would
+want execution to continue after the subroutine returns &mdash; and this is
+precisely what the convention prescribes: the last word of the subroutine must
+contain
+<table>
+<tr><th>Addr</th><th></th><th>Left</th><th>Right</th></tr>
+<tr><td valign="baseline"><em>zzz</em></td><td class="pad"></td><td valign="baseline"><tt>-----</tt></td><td valign="baseline"><tt><em>000</em>94</tt></td></tr>
+</table>
+which is an instruction to jump to address 000 Right - but which will, by the
+time it is executed, have been modified to be 'Jump to address 
+<em>xxx</em>+1 Right', which effectively returns from the subroutine and
+resumes execution in the caller at the location one would expect.
+</p>
+
+<h4>Example</h4>
+<p>
+Consider a subroutine, at location 200, which does nothing at all. This would
+look at follows:
+<table>
+<tr><th>Addr</th><td class="pad" rowspan="3"></td><th>Left</th><th>Right</th></tr>
+<tr><td valign="baseline">200</td><td valign="baseline"><tt>00D50</tt></td><td valign="baseline"><tt><em>201</em>38</tt></td></tr>
+<tr><td valign="baseline">201</td><td valign="baseline"><tt>00DB8</tt></td><td valign="baseline"><tt><em>000</em>94</tt></td></tr>
+</table>
+As this subroutine does nothing, the address of its last word ('<em>zzz</em>') 
+turns out to be 201, making the right instruction in the subroutine's first
+word '20138', to store the return address in [201]<sub>20...31</sub>. In order
+to fill the otherwise unused left instruction at address 201, we use instruction
+000B8, which is a no-operation instruction. At address 201 Right, the subroutine
+will return to its caller by jumping to the appropriate return address.
+</p>
+<p>
+To call this subroutine is straightforward, we simply use the conventional
+template and provide the correct addresses. So, if our code at instruction
+634 wishes to invoke the subroutine at address 200, the code will be
+<table>
+<tr><th>Addr</th><td class="pad" rowspan="3"></td><th>Left</th><th>Right</th></tr>
+<tr><td valign="baseline">634</td><td valign="baseline"><tt>-----</tt></td><td valign="baseline"><tt><em>634</em>52</tt></td></tr>
+<tr><td valign="baseline">635</td><td valign="baseline"><tt><em>200</em>90</tt></td><td valign="baseline"><tt>-----</tt></td></tr>
+</table>
+Here, we have replaced <em>xxx</em> with the address of the call site, 634,
+and <em>yyy</em> has been replaced with the address of the subroutine, 200.
+</p>
+<p>
+More experienced programmers will note that while this convention allows for
+any program or subroutine to call any other subroutine, it only allows for
+any subroutine to remember a single return address at any given time. Thus, this
+convention does not allow for recursive subroutine calls. 
+</p>
+
+<!-- #Programming SMIL!Opimal Coding# -->
+<h2>Optimal Coding</h2>
+<p>
+A consequence of SMIL's use of drum memory is that access to memory takes 
+different amounts of time depending on the distance from the current position
+of the drum to the memory location sought. Thus, instructions placed sequentially
+in memory will generally require a full rotation of the drum - 10240 &micro;s - 
+between instructions, even though each instruction may execute much quicker 
+than that. In order to use the maximal speed that SMIL can offer, a technique
+known as 'optimal coding' is used, whereby each instruction is followed
+immediately by an unconditional jump to the next instruction, which in turn has
+been placed at that address on the drum which will be available to execute
+precisely after the jump itself has executed. In other words, optimally-coded
+instructions will <em>not</em> be sequentially placed in memory, but spread
+throughout the memory space at such addresses as to minimize the time spent 
+waiting for a specific memory address to arrive at the drum's read/write heads.
+Further, optimal code places variables at locations in memory where they, too,
+will be available immediately for reading and/or writing, as necessary.
+You may calculate the times for instructions yourself, based on the table in the 
+<a href="#InstructionTiming">Instruction Timing and Execution</a> section
+above, or you can use the pre-calculated table that describes the appropriate
+timing choices:
+<table>
+<tbody>
+<tr><th>Addr</th><th colspan="2">Left</th><td class="pad" rowspan="8"></th><th colspan="2">Right</th><td class="pad" rowspan="8"><th>Op</th><th><em>P</em></th><th><em>Q</em></th></tr>
+<tr><td valign="baseline" rowspan="4"><em>n</em></td><td valign="baseline" rowspan="4" align="right">(<em>n</em> + <em>P</em>)</td><td valign="baseline" rowspan="4">Op</td><td valign="baseline" rowspan="4" align="right">(<em>n</em> + <em>P</em> + <em>Q</em>)</td><td valign="baseline" rowspan="4">90</td><td>3</td><td>006</td><td>02D</td></tr>
+<tr><td>4,5</td><td>006</td><td>018</td></tr>
+<tr><td>A</td><td>00F</td><td>00F</td></tr>
+<tr><td>1,6,7,8</td><td>006</td><td>043</td></tr>
+<tr><td valign="baseline" rowspan="2"><em>n</em></td><td valign="baseline" rowspan="2" align="right"><em>p</em></td><td valign="baseline" rowspan="2">Op</td><td valign="baseline" rowspan="2" align="right">(<em>n</em> + <em>Q</em>)</td><td valign="baseline" rowspan="2">90</td><td>2</td><td>&mdash;</td><td>049</td></tr>
+<tr><td>C</td><td>&mdash;</td><td>044</td></tr>
+<tr><td valign="baseline" rowspan="1"><em>n</em></td><td valign="baseline" rowspan="1" align="right"><em>q</em></td><td valign="baseline" rowspan="1">Op</td><td valign="baseline" rowspan="1" align="right">(<em>n</em> + <em>q</em> + <em>Q</em>)</td><td valign="baseline" rowspan="1">90</td><td>D</td><td>&mdash;</td><td>022</td></tr>
+</tbody>
+</table>
+For instructions 2 and C, <em>p</em> is not used at all and is thus
+irrelevant for calculating the next instruction's address. For instruction D,
+<em>q</em> specifies a number of shifts to perform, and is thus used but not
+as an address. As a special note, if instruction C is used to normalize
+the number 0, a value for <em>Q</em> of 05D should be used. An example of 
+a complete, optimally coded program fragment is the following:
+<table><tbody>
+<tr><td><tt>020</tt></td><td class="pad" rowspan="7"></td><td><tt>02642</tt></td><td><tt>03E90</tt></td></tr>
+<tr><td><tt>03S</tt></td><td><tt>04462</tt></td><td><tt>08790</tt></td></tr>
+<tr><td><tt>087</tt></td><td><tt>000C0</tt></td><td><tt>0CB90</tt></td></tr>
+<tr><td><tt>0CB</tt></td><td><tt>006D8</tt></td><td><tt>0F390</tt></td></tr>
+<tr><td><tt>0F3</tt></td><td><tt>0F930</tt></td><td><tt>12690</tt></td></tr>
+<tr><td><tt>126</tt></td><td><tt>135A0</tt></td><td><tt>14490</tt></td></tr>
+<tr><td><tt>144</tt></td><td><tt>.....</tt></td><td></td></tr>
+</tbody></table>
+Optimal coding only really makes sense for small amounts of code which will be executed repeatedly, as that is the
+situation where significant performance gains can be made.
+</p>
+<p>You can use the <em>Drum Memory Latency</em> checkbox in the <a href="#Options">Options</a> window
+to see the impact of drum memory latency on the execution speed of your programs, and
+compare it with the execution speed of optimally coded programs.</p>
+
+<!-- #Programming SMIL!Included Programs# -->
+<h2>Included Programs &mdash; the <em>Standard Tapes</em></h2>
+
+<p>Included with SMILemu are a number of SMIL programs in the form
+of 'standard tapes' which are available directly from the <a
+href="#TapeMenu">Tape menu</a>'s <em>Load Standard Tape</em> submenu. But
+these are just ordinary tape files &mdash; they just happen to be included in the
+SMILemu java archive (<tt>SMILemu-1.2.jar</tt>). It should be noted that several of
+the standard tapes are actually tapes for <em>subroutines</em> which are used
+by other programs, and can be used by you for your own programs if you
+wish.</p>
+
+<a name="A1"></a><h3>A1</h3>
+
+<p>The <em>A1</em> tape is pre-loaded into the Tape Reader when SMILemu starts.
+A1 is the standard SMIL loader program: It bootstraps SMIL and loads itself
+into SMIL's lowest memory range, offers facilities for loading other tapes to
+arbitrary memory locations, and includes a number of useful constants which
+will by convention always be available at the memory locations where they are
+placed by A1.</p>
+
+<p>To invoke A1, jump to instruction 001 Left (an appropriate instruction is
+00190). After A1 has been loaded, SMIL will in fact be halted with just such
+a jump instruction as the next instruction to execute; similarly, after A1
+has finished loading a tape, SMIL will be halted such that starting SMIL
+again will jump to 001 Left. This allows for quick loading of a number of
+different tapes in sequence: First A1 is loaded (using <tt>Remsstart</tt> and
+<tt>Start</tt>, as described above at 
+<a href="#Bootstrap">Bootstrap Sequence</a>), 
+then each tape that needs to be loaded is placed in the Tape
+Reader, <tt>Start</tt> is selected, which reads the tape and leaves SMIL
+prepared to read another.</p>
+
+<a name="B2"></a><h3>B2</h3>
+
+<p>The <em>B2</em> program will dump an arbitrary area of memory to the
+typewriter, showing the address and contents of each memory word in the
+range, in hexadecimal. To invoke B2, place the memory range into AR in the
+format <tt>AAA00&nbsp;BBB00</tt>, where AAA is the start address and BBB is the
+end address. This is easily accomplished by first zeroing AR, then putting
+the start address in AR<sub>0...11</sub>, and the end address in
+AR<sub>20...31</sub>. Then jump to program B2's start address, 0E2, by
+placing the instruction <tt>0E290</tt> in one half of IR, ensuring that KR
+points to that half of IR, and pressing <tt>Start</tt>. So, for example, to
+get a typewriter printout of program A1 (which after loading occupies
+addresses 001 to 011), you would set AR to <tt>00100&nbsp;01100</tt>, set
+IR left to <tt>0E290</tt>, clear KR, and press <tt>Start</tt> &mdash; and watch a
+memory dump of addresses 001 to 011, inclusive, appear on the typewriter.</p>
+
+<a name="B3"></a><h3>B3</h3>
+
+<p><em>B3</em> is a subroutine for printing an integer on the printer. The integer to be printed must be
+placed in MR, multiplied by 2<sup>&minus;39</sup> &mdash; essentially, for the purpose of
+the B3 subroutine, the contents of MR will be used as an integer rather than
+a real number. The number of digits to print is placed in 3A6<sub>20...31</sub>;
+by default, 7 digits will be printed.
+B3 occupies memory range 3A6 to 3BA, and invoked by a 
+<a href="#SubroutineCall">subroutine call</a> to address 3B0.</p>
+
+<a name="DecimalOutput"></a><h3>Decimal Output</h3>
+<p>
+The <em>Decimal Output</em> tape contains a subroutine to print a number as a decimal fraction. This subroutine
+will be in loaded into memory range 303 to 30E. To invoke the subroutine, place the number to be
+printed at address 302, the number of decimals do print at address 300, and perform a <a href="#SubroutineCall">subroutine
+call</a> to address 303.
+</p>
+
+<a name="PrintInteger"></a><h3>Print Integer</h3>
+<p>
+The <em>Print Integer</em> tape contains another subroutine for printing integers in decimal format, and loads
+into memory range 500 to 520. It performs differently from the <em><a href="#B3">B3</a></em> subroutine: Rather than the user specifying a fixed number of digits to print,
+the <em>Print Integer</em> subroutine will print the integer starting only at the first non-zero digit &mdash; so the number
+15 will be printed as '<tt>15</tt>', not as '<tt>0015</tt>'. However, Print Integer will only print integers less than 4096, as 
+it uses only bits 0...11 of its argument.</p>
+<p>To invoke <em>Print Integer</em>, place the integer to be printed in [500]<sub>0...11</sub> (i.e., bits 0 to 11 at address 500),
+and perform a <a href="#SubroutineCall">subroutine call</a> to address 50A. This will print the number, followed by return,
+on the typewriter.
+</p>
+
+<a name="Primes"></a><h3>Primes</h3>
+<p>
+The <em>Primes</em> program prints a list of all odd prime numbers smaller than 127. It uses the <em><a href="#PrintInteger">Print Integer</a></em> subroutine mentioned above.
+It loads into memory range 400 to 416, and is invoked through a jump to 405 Left (instruction 40590).
+</p>
+
+<a name="SineWave"></a><h3>Sine Wave</h3>
+<p>
+If you read the <a href="QuickStart.html">Quick Start</a> document, you have already encountered the <em>Sine Wave</em> program.
+As its name suggests, it plots a sine wave on the printer. Loading into memory range 400 to 40D, it is invoked through a jump to 
+405 Left (instruction 40590).
+</p>
+
+
+<a name="SquareRootSubroutine"></a><h3>Square Root Subroutine</h3>
+<p>The <em>Square Root Subroutine</em> tape loads, into memory range 202 to 20A, a subroutine for calculating the square root of a number.
+The number to be square-rooted should be placed in MR, and the subroutine invoked via a <a href="#SubroutineCall">subroutine call</a> 
+to address 202. The calculated square root will be available to the caller in MR and AR.</p>
+
+<a name="SquareRootsMainProgram"></a><h3>Square Root Main Program</h3>
+<p>The Square Roots Main Program loads into memory range 100 to 10D, and can be invoked through a normal jump to address 
+100. When executed, it will print a table of the numbers 0.1 to 0.9 (at intervals of 0.1), and their square roots. To calculate 
+the results, it uses the <em><a href="#SquareRootsSubroutine">Square Roots Subroutine</a></em>; to print its results, it uses <em><a href="#DecimalOutput">Decimal Output</a></em>. This means that
+both of those tapes need to have been loaded before the Square Roots Main Program can run.
+</p>
+
+<!-- #Acknowledgements# -->
+<h1>Acknowledgments</h1>
+<p>
+This SMIL emulator would not have been possible without the kind and helpful assistance of Lars Gisl&eacute;n,
+including access to the source code of his SMIL emulator and copies of his research material. I include
+his acknowledgments here, verbatim: <blockquote>Professor Carl-Erik Fr&ouml;berg, the creator of SMIL, has most generously supplied
+samples of original programs as well as valuable comments. Kjell J&ouml;nsson who built 
+and maintained the machine has provided valuable information. The main parts of 
+SMIL is now kept at Malm&ouml; Technical Museum. By kind permission of the staff of 
+the museum, I could make research on the detailed layout of the SMIL panel. 
+Magnus Olsson had valuable comments on the documentation and wrote the 
+programs Sine Wave and Primes.</blockquote>
+</p>
+
+<!-- #References# -->
+<h1>References</h1>
+<p>
+<em>Fr&ouml;berg, Carl-Erik</em> and <em>Wahlstr&ouml;m, Gunnar</em>: 
+SMIL. Siffermaskinen i Lund. 
+Acta Regia Societatis Physiographicae Lundensis. 
+Volume 68, page 38, 1957. (In Swedish)
+</p><p>
+<em>Erik Stemme</em>: Den Svenska Automatiska R&auml;knemaskinen BESK. 
+Teknisk Tidskrift, 29 March 1955, page 281. (In Swedish)
+</p><p>
+<em>Herman H, Goldstine</em>, <em>James H. Pomerens</em> and <em>Charles V. L. Smith</em>:
+Final Progress Report on the Physical Realization of an Electronic Computing Instrument.
+The Institute for Advanced Study Electronic Computer Project, January 1954.
+</p>
+
+<!-- #Appendix: Tape Listings# -->
+<h1>Appendix: Tape Listings</h1>                                                                                 
+<p>For your reference, the included tapes are listed, some with comments and  
+explanations.</p>
+
+<!-- #Appendix: Tape Listings!A1# -->
+<h2><a href="#A1">A1</a></h2>
+<p>
+<table>
+<colgroup valign="baseline"></colgroup>
+<tr><td><tt>00100&nbsp;00200</tt></td></tr>
+<tr><td><tt>00000&nbsp;00090</tt></td></tr>
+<tr><td><tt>00000&nbsp;00036</tt></td></tr>
+<tr><td><tt>00300&nbsp;00400</tt></td></tr>
+<tr><td><tt>00852&nbsp;00250</tt></td></tr>
+<tr><td><tt>00230&nbsp;00858</tt></td></tr>
+<tr><td><tt>00500&nbsp;00600</tt></td></tr>
+<tr><td><tt>014DC&nbsp;00058</tt></td></tr>
+<tr><td><tt>002A8&nbsp;000B8</tt></td></tr>
+<tr><td><tt>00700&nbsp;00800</tt></td></tr>
+<tr><td><tt>000B0&nbsp;00192</tt></td></tr>
+<tr><td><tt>00100&nbsp;00000</tt></td></tr>
+<tr><td><tt>00900&nbsp;00A00</tt></td></tr>
+<tr><td><tt>00000&nbsp;0000A</tt></td></tr>
+<tr><td><tt>40000&nbsp;00000</tt></td></tr>
+<tr><td><tt>00B00&nbsp;00C00</tt></td></tr>
+<tr><td><tt>00000&nbsp;00000</tt></td></tr>
+<tr><td><tt>00000&nbsp;00001</tt></td></tr>
+<tr><td><tt>00D00&nbsp;00E00</tt></td></tr>
+<tr><td><tt>00000&nbsp;00100</tt></td></tr>
+<tr><td><tt>0CCCC&nbsp;CCCCD</tt></td></tr>
+<tr><td><tt>00F00&nbsp;01000</tt></td></tr>
+<tr><td><tt>00000&nbsp;00010</tt></td></tr>
+<tr><td><tt>80000&nbsp;00000</tt></td></tr>
+<tr><td><tt>00100&nbsp;00790</tt></td></tr>
+<tr><td><tt>00000&nbsp;00234</tt></td></tr>
+</table>
+</p>
+<p>
+When read into memory, the resulting program in locations 000 to 010 is:
+<table>
+<colgroup span="2" valign="baseline">
+<tr><td><tt>000</tt></td><td class="pad" rowspan="17"></td><td><tt>-----&nbsp;-----</tt></td><td class="pad" rowspan="17"></td><td colspan="2"></td></tr>
+<tr><td><tt>001</tt></td><td><tt>00000&nbsp;00234</tt></td><td>Read label to 000</td><td>Mask label start, place it in 002<sub>L</sub></td></tr>
+<tr><td><tt>002</tt></td><td><tt>00000&nbsp;00036</tt></td><td>Read one word to cell</td><td>Zero 000<sub>L</sub></td></tr>
+<tr><td><tt>003</tt></td><td><tt>00852&nbsp;00250</tt></td><td>Put 1 in AR</td><td>Add label start to AR</td></tr>
+<tr><td><tt>004</tt></td><td><tt>00230&nbsp;00858</tt></td><td>Store in 002</td><td>Subtract 1 from AR</td></tr>
+<tr><td><tt>005</tt></td><td><tt>014DC&nbsp;00058</tt></td><td>Shift right 14 steps</td><td>Subtract label end from AR</td></tr>
+<tr><td><tt>006</tt></td><td><tt>002A8&nbsp;000B8</tt></td><td>Repeat from 002<sub>L</sub> if AR &lt; 0</td><td>No operation</td></tr>
+<tr><td><tt>007</tt></td><td><tt>000B0&nbsp;00192</tt></td><td>Stop, prepare for</td><td>Jump to A1 program start</td></tr>
+<tr><td><tt>008</tt></td><td><tt>00100&nbsp;00000</tt></td><td colspan="2">2<sup>&minus;11</sup></td></tr>
+<tr><td><tt>009</tt></td><td><tt>00000&nbsp;0000A</tt></td><td colspan="2">10&times;2<sup>&minus;39</sup></td></tr>
+<tr><td><tt>00A</tt></td><td><tt>40000&nbsp;00000</tt></td><td colspan="2">0.5</td></tr>
+<tr><td><tt>00B</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2">0.0</td></tr>
+<tr><td><tt>00C</tt></td><td><tt>00000&nbsp;00001</tt></td><td colspan="2">2<sup>&minus;39</sup></td></tr>
+<tr><td><tt>00D</tt></td><td><tt>00000&nbsp;00100</tt></td><td colspan="2">2<sup>&minus;31</sup></td></tr>
+<tr><td><tt>00E</tt></td><td><tt>0CCCC&nbsp;CCCCD</tt></td><td colspan="2">0.1</td></tr>
+<tr><td><tt>00F</tt></td><td><tt>00000&nbsp;00010</tt></td><td colspan="2">2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>010</tt></td><td><tt>80000&nbsp;00000</tt></td><td colspan="2">&minus;1</td></tr>
+</table>
+</p>
+
+<!-- #Appendix: Tape Listings!B2# -->
+<h2><a href="#B2">B2</a></h2>
+<p>
+<table>
+<tr><td></td><td class="pad" rowspan="31"></td><td><tt>0E200&nbsp;0FD00</tt></td><td class="pad" rowspan="31"></td><td colspan="2">Label: Place program in cells 0E2 to 0FD</td></tr>
+<tr><td><tt>0E0</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for M</td></tr>
+<tr><td><tt>0E1</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for N</td></tr>
+<tr><td><tt>0E2</tt></td><td><tt>0E130&nbsp;014DC</tt></td><td>AR &rarr; 0E1</td><td>Shift Right 20. (Save N)</td></tr>
+<tr><td><tt>0E3</tt></td><td><tt>0E030&nbsp;0E136</tt></td><td>AR &rarr; 0E0</td><td>AR &rarr; 0E1<sub>0...11</sub> (Save M)</td></tr>
+<tr><td><tt>0E4</tt></td><td><tt>003F8&nbsp;0E052</tt></td><td>Print &nbsp;TAB</td><td>[0E0] &rarr; AR</td></tr>
+<tr><td><tt>0E5</tt></td><td><tt>0EB38&nbsp;013D0</tt></td><td>AR<sub>20...31</sub> &rarr; 0EB</td><td>Shift Left 19</td></tr>
+<tr><td><tt>0E6</tt></td><td><tt>00B40&nbsp;00F62</tt></td><td>AR &rarr; MR</td><td>Multiply by 2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>0E7</tt></td><td><tt>000F0&nbsp;00F62</tt></td><td>Print AR last positions</td><td>Multiply by 2<sup>&minus;35</sup>  (Print address)</td></tr>
+<tr><td><tt>0E8</tt></td><td><tt>000F0&nbsp;00F62</tt></td><td>Print AR last positions</td><td>Multiply by 2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>0E9</tt></td><td><tt>000F0&nbsp;000F8</tt></td><td>Print AR last positions</td><td>Print space</td></tr>
+<tr><td><tt>0EA</tt></td><td><tt>000F8&nbsp;000F8</tt></td><td>Print space</td><td>Print space</td></tr>
+<tr><td><tt>0EB</tt></td><td><tt>000B8&nbsp;00042</tt></td><td>No operation</td><td>[memory cell] &rarr; AR, MR</td></tr>
+<tr><td><tt>0EC</tt></td><td><tt>024DC&nbsp;000F0</tt></td><td>Shift AR Right 36</td><td>Print last hex digit of AR</td></tr>
+<tr><td><tt>0ED</tt></td><td><tt>00022&nbsp;004D0</tt></td><td>MR &rarr; AR</td><td>Shift AR Left 4</td></tr>
+<tr><td><tt>0EE</tt></td><td><tt>001DC&nbsp;00B40</tt></td><td>Shift AR right 1</td><td>AR &rarr; MR (Print first five digits)</td></tr>
+<tr><td><tt>0EF</tt></td><td><tt>00F62&nbsp;000F0</tt></td><td>Multiply by 2<sup>&minus;35</sup></td><td>Print last hex digit of AR</td></tr>
+<tr><td><tt>0F0</tt></td><td><tt>00F62&nbsp;000F0</tt></td><td>Multiply by 2<sup>&minus;35</sup></td><td>Print last hex digit of AR</td></tr>
+<tr><td><tt>0F1</tt></td><td><tt>00F62&nbsp;000F0</tt></td><td>Multiply by 2<sup>&minus;35</sup></td><td>Print last hex digit of AR</td></tr>
+<tr><td><tt>0F2</tt></td><td><tt>00F62&nbsp;000F0</tt></td><td>Multiply by 2<sup>&minus;35</sup></td><td>Print last hex digit of AR</td></tr>
+<tr><td><tt>0F3</tt></td><td><tt>000F8&nbsp;00F62</tt></td><td>Print space</td><td>Multiply by 2<sup>&minus;35</sup> (Print last five digits)</td></tr>
+<tr><td><tt>0F4</tt></td><td><tt>000F0&nbsp;00F62</tt></td><td>Print last hex digit of AR</td><td>Multiply by 2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>0F5</tt></td><td><tt>000F0&nbsp;00F62</tt></td><td>Print last hex digit of AR</td><td>Multiply by 2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>0F6</tt></td><td><tt>000F0&nbsp;00F62</tt></td><td>Print last hex digit of AR</td><td>Multiply by 2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>0F7</tt></td><td><tt>000F0&nbsp;00F62</tt></td><td>Print last hex digit of AR</td><td>Multiply by 2<sup>&minus;35</sup></td></tr>
+<tr><td><tt>0F8</tt></td><td><tt>000F0&nbsp;001F8</tt></td><td>Print last hex digit of AR</td><td>Print Carriage Return</td></tr>
+<tr><td><tt>0F9</tt></td><td><tt>0E052&nbsp;0E158</tt></td><td>[0E0] &rarr; AR</td><td>Subtract [0E1] (Check if finished)</td></tr>
+<tr><td><tt>0FA</tt></td><td><tt>0FCA4&nbsp;0E052</tt></td><td>If AR &ge; 0 then jump 0FC<sub>R</sub></td><td>Subtract [0E0]</td></tr>
+<tr><td><tt>0FB</tt></td><td><tt>00D50&nbsp;0E030</tt></td><td>Add 1 to AR</td><td>AR &rarr; [0E0]</td></tr>
+<tr><td><tt>0FC</tt></td><td><tt>0E490&nbsp;000B0</tt></td><td>Jump to 0E4<sub>L</sub></td><td>Stop (Wait for new tape)</td></tr>
+<tr><td><tt>0FD</tt></td><td><tt>0E290&nbsp;000B0</tt></td><td>Jump to 0E2<sub>L</sub></td><td>Stop</td></tr>
+</table>
+</p>
+
+<!-- #Appendix: Tape Listings!B3# -->
+<h2><a href="#B3">B3</a></h2>
+<p>
+<table>
+<tr><td></td><td class="pad" rowspan="22"></td><td><tt>3A600&nbsp;3BA00</tt></td><td class="pad" rowspan="22"></td><td>Label</td></tr>
+<tr><td><tt>3A6</tt></td><td><tt>00000&nbsp;00700</tt></td><td colspan="2">Place for # of decimals (7 in this case)</td></tr>
+<tr><td><tt>3A7</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2"></td></tr>
+<tr><td><tt>3A8</tt></td><td><tt>00000&nbsp;00100</tt></td><td colspan="2"></td></tr>
+<tr><td><tt>3A9</tt></td><td><tt>00000&nbsp;0000A</tt></td><td colspan="2"></td></tr>
+<tr><td><tt>3AA</tt></td><td><tt>0CCCC&nbsp;CCCCD</tt></td><td colspan="2">10<sup>&minus;1</sup></td></tr>
+<tr><td><tt>3AB</tt></td><td><tt>0147A&nbsp;E147B</tt></td><td colspan="2">10<sup>&minus;2</sup></td></tr>
+<tr><td><tt>3AC</tt></td><td><tt>0020C&nbsp;49BA6</tt></td><td colspan="2">10<sup>&minus;3</sup></td></tr>
+<tr><td><tt>3AD</tt></td><td><tt>00034&nbsp;6DC5E</tt></td><td colspan="2">10<sup>&minus;4</sup></td></tr>
+<tr><td><tt>3AE</tt></td><td><tt>00005&nbsp;3E2D7</tt></td><td colspan="2">10<sup>&minus;5</sup></td></tr>
+<tr><td><tt>3AF</tt></td><td><tt>00000&nbsp;8637C</tt></td><td colspan="2">10<sup>&minus;6</sup></td></tr>
+<tr><td><tt>3B0</tt></td><td><tt>014D8&nbsp;3A850</tt></td><td colspan="2">Compute return address</td></tr>
+<tr><td><tt>3B1</tt></td><td><tt>000B8&nbsp;3B052</tt></td><td>No operation</td><td>[3B0] &rarr; AR</td></tr>    
+<tr><td><tt>3B2</tt></td><td><tt>3A650&nbsp;3B338</tt></td><td>Add [3A6]</td><td>AR<sub>20..31</sub> &rarr; 3B3</td></tr>
+<tr><td><tt>3B3</tt></td><td><tt>000B8&nbsp;00062</tt></td><td>No operation</td><td>Multiply by power of ten</td></tr>
+<tr><td><tt>3B4</tt></td><td><tt>000F0&nbsp;3A852</tt></td><td>Print digit</td><td>[3A8] &rarr; AR</td></tr>
+<tr><td><tt>3B5</tt></td><td><tt>001D0&nbsp;3A730</tt></td><td>Shift AR left 1</td><td>AR &rarr; 3A7</td></tr>
+<tr><td><tt>3B6</tt></td><td><tt>3A962&nbsp;000F0</tt></td><td>[3A9] &times; AR &rarr; AR, MR</td><td>Print digit</td></tr>
+<tr><td><tt>3B7</tt></td><td><tt>3A752&nbsp;3A658</tt></td><td>[3A7] &rarr; AR</td><td>Subtract [3A6]</td></tr>
+<tr><td><tt>3B8</tt></td><td><tt>3B4A4&nbsp;3A752</tt></td><td>Jump to 3BAR if A &ge; 0</td><td>else [3A7] &rarr; AR</td></tr>
+<tr><td><tt>3B9</tt></td><td><tt>3A850&nbsp;3B594</tt></td><td>Add [3A8]</td><td>Jump 3B5R</td></tr>
+<tr><td><tt>3BA</tt></td><td><tt>000B8&nbsp;00094</tt></td><td>No operation</td><td>Return jump</td></tr>
+</table>
+</p>
+
+<!-- #Appendix: Tape Listings!Decimal Output# -->
+<h2><a href="#DecimalOutput">Decimal Output</a></h2>
+<p>
+<table>
+<tr><td></td><td class="pad" rowspan="19"></td><td><tt>30300&nbsp;31100</tt></td><td class="pad" rowspan="19"></td><td>Label</td></tr>
+<tr><td><tt>300</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for number of decimals in format 00000 N00</td></tr>
+<tr><td><tt>301</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for decimal counter</td></tr>
+<tr><td><tt>302</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for number to be printed</td></tr>
+<tr><td><tt>303</tt></td><td><tt>00D50&nbsp;31138</tt></td><td colspan="2">Compute return address</td></tr>
+<tr><td><tt>304</tt></td><td><tt>30252&nbsp;309A4</tt></td><td>[302] &rarr; AR</td><td>If AR &lt; 0 then jump to 309<sub>R</sub></td></tr>
+<tr><td><tt>305</tt></td><td><tt>004F8&nbsp;3025A</tt></td><td>Print '<tt>&minus;</tt>'</td><td>&minus;[302] &rarr; AR</td></tr>
+<tr><td><tt>306</tt></td><td><tt>30798&nbsp;30A90</tt></td><td>If overflow then Jump 307<sub>L</sub></td><td>Jump 30A<sub>L</sub></td></tr>
+<tr><td><tt>307</tt></td><td><tt>00C52&nbsp;000F0</tt></td><td>2<sup>&minus;39</sup> &rarr; AR</td><td>Print last hex digit in AR ('<tt>1</tt>')</td></tr>
+<tr><td><tt>308</tt></td><td><tt>00B52&nbsp;30230</tt></td><td>0.0 &rarr; AR</td><td>AR &rarr; [302]</td></tr>
+<tr><td><tt>309</tt></td><td><tt>30B90&nbsp;000F8</tt></td><td>Jump 30B<sub>L</sub></td><td>Print space</td></tr>
+<tr><td><tt>30A</tt></td><td><tt>30230&nbsp;000F2</tt></td><td>AR &rarr; [302]</td><td>Print '<tt>0</tt>'</td></tr>
+<tr><td><tt>30B</tt></td><td><tt>002F8&nbsp;30242</tt></td><td>Print '<tt>.</tt>'</td><td>[302] &rarr; AR, MR</td></tr>
+<tr><td><tt>30C</tt></td><td><tt>00D52&nbsp;30130</tt></td><td>2<sup>&minus;31</sup> &rarr; AR</td><td>AR &rarr; 301</td></tr>
+<tr><td><tt>30D</tt></td><td><tt>00962&nbsp;000F0</tt></td><td>MR &times; 10 &times; 2<sup>&minus;39</sup> &rarr; AR, MR</td><td>Print last hex digit in AR</td></tr>
+<tr><td><tt>30E</tt></td><td><tt>30152&nbsp;30058</tt></td><td>[301] &rarr; AR</td><td>Subtract [300]</td></tr>
+<tr><td><tt>30F</tt></td><td><tt>311A0&nbsp;30152</tt></td><td>If AR &lt; 0 then jump to 311<sub>L</sub></td><td>[301] &rarr; AR</td></tr>
+<tr><td><tt>310</tt></td><td><tt>00D50&nbsp;30C94</tt></td><td>Add 1</td><td>Jump to 30C<sub>R</sub></td></tr>
+<tr><td><tt>311</tt></td><td><tt>000B8&nbsp;00094</tt></td><td>No Operation</td><td>Return Jump</td></tr>
+</table>
+Note: This version correctly handles the special case value &minus;1.0.
+</p>
+
+<!-- #Appendix: Tape Listings!Print Integer# -->
+<h2><a href="#PrintInteger">Print Integer</a></h2>
+<p>
+By Magnus Olsson 1991. Jump address 50A90
+<table>
+<tr><td></td><td class="pad" rowspan="34"></td><td><tt>50000&nbsp;52000</tt></td><td class="pad" rowspan="34"></td><td>Label</td></tr>
+<tr><td><tt>500</tt></td><td><tt>06500&nbsp;00000</tt></td><td colspan="2">Number to be printed</td></tr>
+<tr><td><tt>501</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2">Base</td></tr>
+<tr><td><tt>502</tt></td><td><tt>3E800&nbsp;00000</tt></td><td colspan="2">1000</td></tr>
+<tr><td><tt>503</tt></td><td><tt>06400&nbsp;00000</tt></td><td colspan="2">100</td></tr>
+<tr><td><tt>504</tt></td><td><tt>00A00&nbsp;00000</tt></td><td colspan="2">10</td></tr>
+<tr><td><tt>505</tt></td><td><tt>00100&nbsp;00000</tt></td><td colspan="2">1</td></tr>
+<tr><td><tt>506</tt></td><td><tt>80000&nbsp;00000</tt></td><td colspan="2">&minus;1</td></tr>
+<tr><td><tt>507</tt></td><td><tt>00000&nbsp;00001</tt></td></tr>
+<tr><td><tt>508</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2">Blanking flag (&minus;1 = TRUE)</td></tr>
+<tr><td><tt>509</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2">Digit to be printed</td></tr>
+<tr><td><tt>50A</tt></td><td><tt>00D50&nbsp;51638</tt></td><td colspan="2">Compute return address</td></tr>
+<tr><td><tt>50B</tt></td><td><tt>50652&nbsp;50830</tt></td><td colspan="2">Blanking &larr; TRUE</td></tr>
+<tr><td><tt>50C</tt></td><td><tt>50252&nbsp;50130</tt></td><td colspan="2">Base &larr; 1000</td></tr>
+<tr><td><tt>50D</tt></td><td><tt>000B8&nbsp;50D52</tt></td><td colspan="2">Call printout</td></tr>
+<tr><td><tt>50E</tt></td><td><tt>51790&nbsp;50352</tt></td><td colspan="2">Base &larr; 100</td></tr>
+<tr><td><tt>50F</tt></td><td><tt>50130&nbsp;50F52</tt></td></tr>
+<tr><td><tt>510</tt></td><td><tt>51790&nbsp;50452</tt></td><td colspan="2">Base &larr; 10</td></tr>
+<tr><td><tt>511</tt></td><td><tt>50130&nbsp;51152</tt></td></tr>
+<tr><td><tt>512</tt></td><td><tt>51790&nbsp;50552</tt></td><td colspan="2">Base &larr; 1</td></tr>
+<tr><td><tt>513</tt></td><td><tt>50130&nbsp;50832</tt></td><td classcolspan="2">Blanking &larr; FALSE</td></tr>
+<tr><td><tt>514</tt></td><td><tt>000B8&nbsp;51452</tt></td></tr>
+<tr><td><tt>515</tt></td><td><tt>51790&nbsp;001F8</tt></td><td colspan="2">CR</td></tr>
+<tr><td><tt>516</tt></td><td><tt>000B8&nbsp;00094</tt></td><td colspan="2">Return jump</td></tr>
+<tr><td><tt>517</tt></td><td><tt>00D50&nbsp;52038</tt></td><td colspan="2">Return address</td></tr>
+<tr><td><tt>518</tt></td><td><tt>50932&nbsp;000B8</tt></td><td colspan="2">Clear digit</td></tr>
+<tr><td><tt>519</tt></td><td><tt>50052&nbsp;50158</tt></td><td colspan="2">Number &minus; Base &rarr; AR</td></tr>
+<tr><td><tt>51A</tt></td><td><tt>51DA8&nbsp;50030</tt></td><td>Jump 51D<sub>L</sub> if AR &lt; 0</td><td>else AR &rarr; number</td></tr>
+<tr><td><tt>51B</tt></td><td><tt>50952&nbsp;50750</tt></td><td colspan="2">Increment digit</td></tr>
+<tr><td><tt>51C</tt></td><td><tt>50930&nbsp;51990</tt></td><td colspan="2">and repeat</td></tr>
+<tr><td><tt>51D</tt></td><td><tt>50852&nbsp;51FA0</tt></td><td colspan="2">Go to printout if blanking = FALSE</td></tr>
+<tr><td><tt>51E</tt></td><td><tt>5095A&nbsp;520A4</tt></td><td colspan="2">Return jump if digit &lt; 0</td></tr>
+<tr><td><tt>51F</tt></td><td><tt>50952&nbsp;000F0</tt></td><td colspan="2">Write digit</td></tr>
+<tr><td><tt>520</tt></td><td><tt>50832&nbsp;00094</tt></td><td>Clear blanking flag</td><td>return jump</td></tr>
+</table>
+</p>
+
+<!-- #Appendix: Tape Listings!Primes# -->
+<h2><a href="#Primes">Primes</a></h2>
+<p>
+Primes. By Magnus Olsson 1991.
+Start address 40590
+<table>
+<tr><td></td><td class="pad" rowspan="24"></td><td><tt>40000&nbsp;41600</tt></td><td class="pad" rowspan="24"></td><td>Label</td></tr>
+<tr><td><tt>400</tt></td><td><tt>7C000&nbsp;00000</tt></td><td colspan="2">Current</td></tr>
+<tr><td><tt>401</tt></td><td><tt>00300&nbsp;00000</tt></td><td colspan="2">step = 3</td></tr>
+<tr><td><tt>402</tt></td><td><tt>00100&nbsp;00000</tt></td><td colspan="2">1</td></tr>
+<tr><td><tt>403</tt></td><td><tt>00200&nbsp;00000</tt></td><td colspan="2">2</td></tr>
+<tr><td><tt>404</tt></td><td><tt>80000&nbsp;00000</tt></td><td colspan="2">&minus;1</td></tr>
+<tr><td><tt>405</tt></td><td><tt>001F8&nbsp;40452</tt></td><td>Print CR</td><td>&minus;1 &rarr; AR</td></tr>
+<tr><td><tt>406</tt></td><td><tt>7C030&nbsp;40652</tt></td><td>flag [i] &larr; (&minus;1)</td><td>i &larr; i + 1 (i = address part of [406<sub>L</sub>])</td></tr>
+<tr><td><tt>407</tt></td><td><tt>40250&nbsp;40630</tt></td></tr>
+<tr><td><tt>408</tt></td><td><tt>405A4&nbsp;40142</tt></td><td>Repeat until i = 800</td><td>[500] &larr; step</td></tr>
+<tr><td><tt>409</tt></td><td><tt>50030&nbsp;40952</tt></td><td colspan="2">Jump to printout routine at 50A</td></tr>
+<tr><td><tt>40A</tt></td><td><tt>50A90&nbsp;40D52</tt></td><td colspan="2">j &larr; j + step (j = address part of [40D<sub>L</sub>])</td></tr>
+<tr><td><tt>40B</tt></td><td><tt>40150&nbsp;40D30</tt></td></tr>
+<tr><td><tt>40C</tt></td><td><tt>40EA8&nbsp;000B8</tt></td><td colspan="2">Finish if j &ge; 800</td></tr>
+<tr><td><tt>40D</tt></td><td><tt>7C032&nbsp;40A94</tt></td><td>flag[j] &larr; 0</td><td>goto 40A<sub>R</sub></td></tr>
+<tr><td><tt>40E</tt></td><td><tt>40152&nbsp;40350</tt></td><td colspan="2">step &larr; step + 2</td></tr>
+<tr><td><tt>40F</tt></td><td><tt>40130&nbsp;40052</tt></td><td colspan="2">current &larr; current +1</td></tr>
+<tr><td><tt>410</tt></td><td><tt>40250&nbsp;40030</tt></td></tr>
+<tr><td><tt>411</tt></td><td><tt>414AC&nbsp;41234</tt></td><td>Finish if current &ge; 800</td><td>[412]<sub>0...11</sub> &larr; current</td></tr>
+<tr><td><tt>412</tt></td><td><tt>7C052&nbsp;40EA0</tt></td><td colspan="2">Try again if flag[current] &ge; 0</td></tr>
+<tr><td><tt>413</tt></td><td><tt>40052&nbsp;40D34</tt></td><td colspan="2">[40D]<sub>0...11</sub> &larr; current</td></tr>
+<tr><td><tt>414</tt></td><td><tt>40894&nbsp;006F8</tt></td><td>goto 408<sub>R</sub></td><td>End; underline</td></tr>
+<tr><td><tt>415</tt></td><td><tt>006F8&nbsp;006F8</tt></td><td>underline</td><td>underline</td></tr>
+<tr><td><tt>416</tt></td><td><tt>001F8&nbsp;FFFB0</tt></td><td>CR</td><td>stop</td></tr>
+</table>
+Note: This is equivalent to the Pascal program
+<pre>
+<b>PROGRAM</b> Primes(output);
+
+<b>VAR</b> 
+    i, j, current, step: Integer;
+    flag               : <b>ARRAY</b>[$7C0..$7FF] OF Boolean; 
+
+<b>BEGIN</b>
+    current := $7C0;
+    step := 3;
+    <b>FOR</b> i := $7C0 <b>TO</b> $7FF <b>DO</b>
+        flag[i] := TRUE;
+
+    <b>REPEAT</b>
+        WriteLn(step);               {<i>is a prime</i>}
+        j := current;
+        <b>WHILE</b> j &lt; $800 <b>DO</b>
+        <b>BEGIN</b>
+            j := j + step;
+            <b>IF</b> j &lt; $800 <b>THEN</b>
+                flag[j] := FALSE;    {<i>divisible by step</i>}
+        <b>END</b>;
+        <b>REPEAT</b> <i>next prime</i>
+            step := step + 2;
+            current := current + 1;
+        <b>UNTIL</b> (current &gt;= $800) OR flag[current];    
+    <b>UNTIL</b> current &gt;= $800;
+    WriteLn ('___');
+<b>END</b>.
+</pre>
+</p>
+
+<!-- #Appendix: Tape Listings!Sine Wave# -->
+<h2><a href="#SineWave">Sine Wave</a></h2>
+<p>
+By Magnus Olsson 1991.
+Start address 40590
+<table>
+<tr><td></td><td class="pad" rowspan="15"></td><td><tt>40000&nbsp;40D00</tt></td><td class="pad" rowspan="15"></td><td>Label</td></tr>
+<tr><td><tt>400</tt></td><td><tt>02AAA&nbsp;AAAAA</tt></td><td colspan="2">0.025</td></tr>
+<tr><td><tt>401</tt></td><td><tt>20000&nbsp;00000</tt></td><td colspan="2">0.25</td></tr>
+<tr><td><tt>402</tt></td><td><tt>3243F&nbsp;60000</tt></td><td colspan="2">h = &pi; &divide; 8</td></tr>
+<tr><td><tt>403</tt></td><td><tt>20000&nbsp;00000</tt></td><td colspan="2">y = 0.25</td></tr>
+<tr><td><tt>404</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2">y' = 0</td></tr>
+<tr><td><tt>405</tt></td><td><tt>001F8&nbsp;001F8</tt></td><td>Print CR</td><td>Print CR</td></tr>
+<tr><td><tt>406</tt></td><td><tt>4034A&nbsp;40272</tt></td><td colspan="2">h &times; (&minus;y) &rarr; AR</td></tr>
+<tr><td><tt>407</tt></td><td><tt>40440&nbsp;40430</tt></td><td colspan="2">y' &minus; h &times; y &rarr; y'</td></tr>
+<tr><td><tt>408</tt></td><td><tt>40272&nbsp;40350</tt></td><td colspan="2">y + h &times; y' &rarr; AR</td></tr>
+<tr><td><tt>409</tt></td><td><tt>40330&nbsp;40150</tt></td><td>AR &rarr; y</td><td>AR+0.25 &rarr; AR</td></tr>
+<tr><td><tt>40A</tt></td><td><tt>40CA8&nbsp;000F8</tt></td><td>If AR &lt; 0 go to 40C<sub>L</sub></td><td>else write '<tt> </tt>'</td></tr>
+<tr><td><tt>40B</tt></td><td><tt>40058&nbsp;40A90</tt></td><td>AR &minus; 0.0025 &rarr; AR</td><td>jump 40A<sub>L</sub></td></tr>
+<tr><td><tt>40C</tt></td><td><tt>005F8&nbsp;001F8</tt></td><td>write '<tt>+</tt>'</td><td>write '<tt> </tt>'</td></tr>
+<tr><td><tt>40D</tt></td><td><tt>40690&nbsp;000B0</tt></td><td colspan="2">jump 406<sub>L</sub></td></tr>
+</table>
+
+NOTE: This program numerically solves the differential program y'' = &minus;y,
+y(0) = 1/4, y'(0) = 0, by Euler's method and plots the solution y = 0.25 &times; sin(x + &pi;/2),
+for x = 0, &pi;/8, &pi;/4, ...
+</p>
+
+<!-- #Appendix: Tape Listings!Square Root Subroutine# -->
+<h2><a href="#SquareRootSubroutine">Square Root Subroutine</a></h2>
+<p>
+Subroutine that computes the square root of a number. The number should be in MR. When the return jump occurs, the result is in MR and AR. Start address 202<sub>L</sub>.
+<table>
+<tr><td></td><td class="pad" rowspan="12"></td><td><tt>20200&nbsp;20A00</tt></td><td class="pad" rowspan="12"></td><td colspan="2">Label: Places subroutine in 202-20A</td></tr>
+<tr><td><tt>200</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for number</td></tr>
+<tr><td><tt>201</tt></td><td><tt>-----&nbsp;-----</tt></td><td colspan="2">Place for intermediate result x<sub>n</sub></td></tr>
+<tr><td><tt>202</tt></td><td><tt>00D50&nbsp;20A38</tt></td><td>Compute return address jump</td><td>Place in 20A<sub>R</sub></td></tr>
+<tr><td><tt>203</tt></td><td><tt>20132&nbsp;00022</tt></td><td>0 &rarr; AR &rarr; 201</td><td>MR &rarr; AR</td></tr>
+<tr><td><tt>204</tt></td><td><tt>20030&nbsp;001D8</tt></td><td>AR &rarr; 200</td><td>Multiply by 0.5</td></tr>
+<tr><td><tt>205</tt></td><td><tt>00A50&nbsp;20150</tt></td><td>Add 0.5</td><td>Add [201] to AR</td></tr>
+<tr><td><tt>206</tt></td><td><tt>20130&nbsp;20052</tt></td><td>AR &rarr; 201</td><td>[200] &rarr; AR</td></tr>
+<tr><td><tt>207</tt></td><td><tt>20180&nbsp;00028</tt></td><td colspan="2">Divide AR by [201]</td></tr>
+<tr><td><tt>208</tt></td><td><tt>20158&nbsp;001D8</tt></td><td>Subtract [201] from AR</td><td>Multiply by 0.5</td></tr> 
+<tr><td><tt>209</tt></td><td><tt>205AC&nbsp;20142</tt></td><td>Jump to 205<sub>R</sub> if AR &lt; 0</td><td>Put result in AR and MR</td></tr>
+<tr><td><tt>20A</tt></td><td><tt>000B8&nbsp;00094</tt></td><td>No operation</td><td>Return jump</td></tr>
+</table>
+</p>
+
+<!-- #Appendix: Tape Listings!Square Roots Main Program# -->
+<h2><a href="#SquareRootsMainProgram">Square Roots Main Program</a></h2>
+<p>
+Computes the square root of the numbers 0.1 to 0.9 on steps of 0.1. Uses subroutines Root and DecimalOutput. Start address 101<sub>L</sub>.
+<table>
+<tr><td></td><td class="pad" rowspan="15"></td><td><tt>10000&nbsp;10D00</tt></td><td class="pad" rowspan="15"></td><td colspan="2">Label. Places program in cells 100 to 10D.</td></tr>
+<tr><td><tt>100</tt></td><td><tt>00000&nbsp;00000</tt></td><td colspan="2">Variable: Number to take square root of</td></tr>
+<tr><td><tt>101</tt></td><td><tt>00D52&nbsp;001D0</tt></td><td colspan="2">Place 0000 00200 in AR (number of decimals in output)</td></tr>
+<tr><td><tt>102</tt></td><td><tt>30030&nbsp;00E52</tt></td><td>AR &rarr; 300</td><td>0.1 &rarr; AR</td></tr>
+<tr><td><tt>103</tt></td><td><tt>10050&nbsp;10030</tt></td><td>Add [100] to AR</td><td>Store in 100</td></tr>
+<tr><td><tt>104</tt></td><td><tt>30230&nbsp;10DAC</tt></td><td>AR &rarr; 302</td><td>If AR &lt; 0 then jump to 10D<sub>R</sub></td></tr>
+<tr><td><tt>105</tt></td><td><tt>000B8&nbsp;10552</tt></td><td>No operation</td><td>Prepare for subroutine jump</td></tr>
+<tr><td><tt>106</tt></td><td><tt>30390&nbsp;000F8</tt></td><td>Jump to subroutine at 303</td><td>Print Space (Print number)</td></tr>
+<tr><td><tt>107</tt></td><td><tt>10052&nbsp;00B40</tt></td><td>[100] &rarr; AR</td><td>AR &rarr; MR</td></tr>
+<tr><td><tt>108</tt></td><td><tt>000B8&nbsp;10852</tt></td><td>No operation</td><td>Prepare for subroutine jump</td></tr>
+<tr><td><tt>109</tt></td><td><tt>20290&nbsp;30230</tt></td><td>Jump to subroutine at 202</td><td>Place result in 302 (to be printed)</td></tr>
+<tr><td><tt>10A</tt></td><td><tt>00952&nbsp;008D0</tt></td><td>10 &times; 2<sup>&minus;39</sup> &rarr; AR</td><td>Shift AR Left 8 (10 decimals in printout)</td></tr>
+<tr><td><tt>10B</tt></td><td><tt>30030&nbsp;10B52</tt></td><td>Put # of decimals in 300</td><td>Prepare for subroutine jump</td></tr>
+<tr><td><tt>10C</tt></td><td><tt>30390&nbsp;001F8</tt></td><td>Jump to printout subroutine</td><td>Print Carriage Return</td></tr>
+<tr><td><tt>10D</tt></td><td><tt>10190&nbsp;000B0</tt></td><td>Jump to 101<sub>L</sub></td><td>Stop</td></tr>
+</table>
+</p>
+
+<!-- #Footer# -->
+<p align="center"><font size="-1">Copyright &copy; 2005&ndash;2007 <a href="mailto:smilemu@smilemu.org">Christian Brunschen</a></font></p>
+
+</body>
+</html>
