@@ -138,7 +138,7 @@ public class SMILApp {
     defaultFonts.put("debug", "Monospaced 12");
     defaultFonts.put("memory", "Monospaced 12");
     defaultFonts.put("clock", "Monospaced 12");
-    defaultFonts.put("typewriter", "Monospaced 12");
+    defaultFonts.put("typewriter", "SMIL 20");
     defaultFonts.put("comment", "SansSerif 12");
     defaultFonts.put("default", "Default 12");
   }

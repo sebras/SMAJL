@@ -4,6 +4,7 @@ import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
+import java.io.InputStream;
 
 import com.brunschen.christian.graphic.Font;
 import com.brunschen.christian.graphic.Rectangle;
@@ -20,7 +21,32 @@ public class SwingFont implements Font {
   }
 
   public static SwingFont decode(String s) {
-    return new SwingFont(java.awt.Font.decode(s));
+    java.awt.Font font;
+
+    System.setProperty("awt.useSystemAAFontSettings","on");
+    System.setProperty("swing.aatext", "true");
+
+    int idx = s.lastIndexOf(' ');
+    if (idx == -1 || idx + 1 > s.length())
+      return null;
+
+    String name = s.substring(0, idx);
+    Float size = Float.parseFloat(s.substring(idx + 1));
+
+    String resource = "Fonts/" + name + ".ttf";
+    InputStream is = SwingFont.class.getResourceAsStream(resource);
+
+    if (is != null) {
+      try {
+        font = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, is).deriveFont(size);
+      } catch (Exception e) {
+        return null;
+      }
+    } else {
+      font = java.awt.Font.decode(s);
+    }
+
+    return new SwingFont(font);
   }
 
   @Override
